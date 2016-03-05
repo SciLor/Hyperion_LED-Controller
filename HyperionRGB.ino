@@ -5,7 +5,7 @@
 
 #include "WrapperWiFi.h"
 #include "WrapperOTA.h"
-#include "WrapperWS2801.h"
+#include "WrapperFastLed.h"
 #include "WrapperUdpLed.h"
 #include "WrapperJsonServer.h"
 
@@ -19,7 +19,7 @@ WrapperOTA ota = WrapperOTA(Config::host);
 
 int ledState = LOW;
 
-WrapperWS2801 ws2801 = WrapperWS2801(Config::ledCount, Config::dataPin, Config::clockPin);
+WrapperFastLed ledStrip = WrapperFastLed();
 
 WrapperUdpLed udpLed = WrapperUdpLed(Config::ledCount, Config::udpLedPort);
 WrapperJsonServer jsonServer = WrapperJsonServer(Config::ledCount, Config::jsonServerPort);
@@ -43,7 +43,7 @@ void statusInfo(void) {
 }
 
 void rainbowStep() {
-  ws2801.rainbowStep();
+  ledStrip.rainbowStep();
 }
 
 void changeMode(Mode newMode) {
@@ -76,19 +76,18 @@ void loop(void) {
 
 void updateLed(int id, byte r, byte g, byte b) {
   Log.verbose("LED %i, r=%i, g=%i, b=%i", id + 1, r, g, b);
-  uint32_t c = ws2801.Color(r, g, b);
-  ws2801.strip.setPixelColor(id, c);
+  ledStrip.leds[id].setRGB(r, g, b);
 }
 void refreshLeds(void) {
   Log.debug("refresh LEDs");
-  ws2801.strip.show();
+  ledStrip.show();
   changeMode(AMBILIGHT);
   resetThread.reset();
 }
 
 void ledColorWipe(byte r, byte g, byte b) {
   Log.debug("LED color wipe: r=%i, g=%i, b=%i", r, g, b);
-  ws2801.colorWipe(r, g, b);
+  ledStrip.fillSolid(r, g, b);
   changeMode(STATIC_COLOR);
 }
 void resetMode(void) {
@@ -117,7 +116,7 @@ void setup(void) {
 
   wifi.begin();
   ota.begin();
-  ws2801.begin();
+  ledStrip.begin();
 
   udpLed.begin();
   udpLed.onUpdateLed(updateLed);

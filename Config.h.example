@@ -13,7 +13,9 @@ class Config {
     static constexpr char* password = "WIFI-PASS";
     
     static constexpr char* host = "ESP8266"; // Hostname
-    
+	
+    static const ESPIChipsets chipset = WS2801;
+    static const EOrder colorOrder = RGB;
     static const uint8_t dataPin  = D1;    // Blue wire
     static const uint8_t clockPin = D2;    // Green wire
     static const uint8_t ledCount = 50;

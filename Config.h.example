@@ -1,0 +1,26 @@
+#ifndef Config_h
+#define Config_h
+
+#include "BaseHeader.h"
+
+#define LOGLEVEL LOG_LEVEL_INFOS
+//#define LOGLEVEL LOG_LEVEL_DEBUG
+//#define LOGLEVEL LOG_LEVEL_VERBOSE
+
+class Config {
+  public:
+    static constexpr char* ssid = "WIFI-SSID";
+    static constexpr char* password = "WIFI-PASS";
+    
+    static constexpr char* host = "ESP8266"; // Hostname
+    
+    static const uint8_t dataPin  = D1;    // Blue wire
+    static const uint8_t clockPin = D2;    // Green wire
+    static const uint8_t ledCount = 50;
+    
+    static const uint16_t udpLedPort = 19446;
+    static const uint16_t jsonServerPort = 19444;
+  private:
+};
+
+#endif

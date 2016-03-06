@@ -2,6 +2,7 @@
 #define Config_h
 
 #include "BaseHeader.h"
+#include <FastLED.h>
 
 #define LOGLEVEL LOG_LEVEL_INFOS
 //#define LOGLEVEL LOG_LEVEL_DEBUG
@@ -15,14 +16,16 @@ class Config {
     static constexpr char* host = "ESP8266"; // Hostname
 	
     static const ESPIChipsets chipset = WS2801;
+    //#define CHIPSET_CLOCKLESS_NAME WS2811
+	
     static const EOrder colorOrder = RGB;
+	
     static const uint8_t dataPin  = D1;    // Blue wire
     static const uint8_t clockPin = D2;    // Green wire
     static const uint8_t ledCount = 50;
     
     static const uint16_t udpLedPort = 19446;
     static const uint16_t jsonServerPort = 19444;
-  private:
 };
 
 #endif

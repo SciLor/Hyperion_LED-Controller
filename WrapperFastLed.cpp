@@ -2,7 +2,12 @@
 
 void WrapperFastLed::begin(void) {
   leds = new CRGB [Config::ledCount];
-  FastLED.addLeds<Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder>(leds, Config::ledCount);
+
+  #ifdef CHIPSET_CLOCKLESS_NAME
+    FastLED.addLeds<CHIPSET_CLOCKLESS_NAME, Config::dataPin, Config::colorOrder>(leds, Config::ledCount);
+  #else
+    FastLED.addLeds<Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder>(leds, Config::ledCount);
+  #endif
 }
 
 void WrapperFastLed::show(void) {

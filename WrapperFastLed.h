@@ -7,7 +7,7 @@
 class WrapperFastLed {
   public:
     void
-      begin(void),
+      begin(const ESPIChipsets chipset, const uint8_t dataPin, const uint8_t clockPin, const uint8_t ledCount, const EOrder colorOrder),
       show(void),
       clear(void),
       fillSolid(const struct CRGB& color),

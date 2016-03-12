@@ -1,12 +1,13 @@
 #include "WrapperFastLed.h"
 
-void WrapperFastLed::begin(void) {
-  leds = new CRGB [Config::ledCount];
+void WrapperFastLed::begin(const ESPIChipsets chipset, const uint8_t dataPin, const uint8_t clockPin, const uint8_t ledCount, const EOrder colorOrder) {
+  leds = new CRGB[ledCount];
 
   #ifdef CHIPSET_CLOCKLESS_NAME
-    FastLED.addLeds<CHIPSET_CLOCKLESS_NAME, Config::dataPin, Config::colorOrder>(leds, Config::ledCount);
+    //FastLED.addLeds<CHIPSET_CLOCKLESS_NAME, dataPin, colorOrder>(leds, ledCount);
   #else
-    FastLED.addLeds<Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder>(leds, Config::ledCount);
+    //FastLED.addLeds<chipset, dataPin, clockPin, colorOrder>(leds, ledCount);
+    FastLED.addLeds<Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder>(leds, ledCount);
   #endif
 }
 

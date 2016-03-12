@@ -8,6 +8,7 @@
 #include "WrapperFastLed.h"
 #include "WrapperUdpLed.h"
 #include "WrapperJsonServer.h"
+#include "WrapperWebconfig.h"
 
 #include "BaseHeader.h"
 
@@ -23,6 +24,8 @@ WrapperFastLed ledStrip = WrapperFastLed();
 
 WrapperUdpLed udpLed = WrapperUdpLed(Config::ledCount, Config::udpLedPort);
 WrapperJsonServer jsonServer = WrapperJsonServer(Config::ledCount, Config::jsonServerPort);
+
+WrapperWebconfig webServer = WrapperWebconfig();
 
 enum Mode { RAINBOW, STATIC_COLOR, AMBILIGHT };
 Mode activeMode = RAINBOW;
@@ -57,6 +60,7 @@ void handleEvents(void) {
   ota.handle();
   udpLed.handle();
   jsonServer.handle();
+  webServer.handle();
 
   threadController.run();
 }
@@ -69,7 +73,7 @@ void loop(void) {
       break;
     case STATIC_COLOR:
       break;
-    case AMBILIGHT:   
+    case AMBILIGHT:
       break;
   }
 }
@@ -115,8 +119,9 @@ void setup(void) {
   threadController.add(&resetThread);
 
   wifi.begin();
+  webServer.begin();
   ota.begin();
-  ledStrip.begin();
+  ledStrip.begin(Config::chipset, Config::dataPin, Config::clockPin, Config::ledCount, Config::colorOrder);
 
   udpLed.begin();
   udpLed.onUpdateLed(updateLed);
@@ -130,5 +135,3 @@ void setup(void) {
 
   Log.info("HEAP=%i", ESP.getFreeHeap());
 }
-//19444
-//19446

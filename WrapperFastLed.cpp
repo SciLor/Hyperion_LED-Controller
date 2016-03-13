@@ -1,13 +1,15 @@
 #include "WrapperFastLed.h"
 
 void WrapperFastLed::begin(const ESPIChipsets chipset, const uint8_t dataPin, const uint8_t clockPin, const uint8_t ledCount, const EOrder colorOrder) {
-  leds = new CRGB[ledCount];
+  _ledCount = ledCount;
+  
+  leds = new CRGB[_ledCount];
 
   #ifdef CHIPSET_CLOCKLESS_NAME
     //FastLED.addLeds<CHIPSET_CLOCKLESS_NAME, dataPin, colorOrder>(leds, ledCount);
   #else
     //FastLED.addLeds<chipset, dataPin, clockPin, colorOrder>(leds, ledCount);
-    FastLED.addLeds<Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder>(leds, ledCount);
+    FastLED.addLeds<Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder>(leds, _ledCount);
   #endif
 }
 
@@ -19,18 +21,17 @@ void WrapperFastLed::clear(void) {
   FastLED.clear();
 }
 
-void WrapperFastLed::fillSolid(const struct CRGB& color) {
-  fill_solid(leds, Config::ledCount, color);
+void WrapperFastLed::fillSolid(CRGB color) {
+  fill_solid(leds, _ledCount, color);
+  show();
 }
 
 void WrapperFastLed::fillSolid(byte r, byte g, byte b) {
-  CRGB color = CRGB();
-  color.setRGB(r, g, b);
-  fill_solid(leds, Config::ledCount, color);
+  fillSolid(CRGB(r, g, b));
 }
 
 void WrapperFastLed::rainbowStep(void) {
-  for (int i=0; i < Config::ledCount; i++) {
+  for (int i=0; i < _ledCount; i++) {
     leds[i] = wheel((i + _rainbowStepState) % 255);
   }  
   show();

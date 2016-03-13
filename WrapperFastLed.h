@@ -10,7 +10,7 @@ class WrapperFastLed {
       begin(const ESPIChipsets chipset, const uint8_t dataPin, const uint8_t clockPin, const uint8_t ledCount, const EOrder colorOrder),
       show(void),
       clear(void),
-      fillSolid(const struct CRGB& color),
+      fillSolid(CRGB color),
       fillSolid(byte r, byte g, byte b),
       rainbowStep(void);
 
@@ -19,6 +19,7 @@ class WrapperFastLed {
   private:   
     CRGB wheel(byte wheelPos);
     byte _rainbowStepState;
+    byte _ledCount;
 };
 
 #endif

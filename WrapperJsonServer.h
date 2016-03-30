@@ -6,7 +6,7 @@
 #include <WifiServer.h>
 #include <WifiClient.h>
 
-#define TCP_BUFFER 256
+#define TCP_BUFFER 512
 
 class WrapperJsonServer {
   public:

@@ -1,6 +1,6 @@
 #include "WrapperWebconfig.h"
 
-void WrapperWebconfig::begin() {
+void WrapperWebconfig::begin() {    
   _server = ESP8266WebServer(_port);
   _server.onNotFound([&](){ WrapperWebconfig::handleNotFound(); });
   _server.on("/", [&](){ WrapperWebconfig::handleRoot(); });
@@ -27,8 +27,18 @@ void WrapperWebconfig::handleNotFound(void) {
 }
 
 void WrapperWebconfig::handleRoot(void) {
+  Log.debug("Webconfig started HEAP=%i", ESP.getFreeHeap());
+  initHelperVars();
+  Log.debug("Webconfig initialized HEAP=%i", ESP.getFreeHeap());
+  if (_server.method() == HTTP_POST) {
+    Log.debug("POST HEAP=%i", ESP.getFreeHeap());
+    changeConfig();
+  }
   String message = htmlTemplate("ESP8266 LED Configuration", WrapperWebconfig::config());
+  clearHelperVars();
+  Log.debug("Webconfig cleared HEAP=%i", ESP.getFreeHeap());
   _server.send(200, "text/html", message);
+  Log.debug("Webconfig sent HEAP=%i", ESP.getFreeHeap());
 }
 
 String WrapperWebconfig::escape(String text) {
@@ -39,13 +49,81 @@ String WrapperWebconfig::escape(char* text) {
 }
 String WrapperWebconfig::escape(uint8_t text) {
   char buf[4];
-  sprintf (buf, "%u", text);
+  sprintf(buf, "%u", text);
   return String(buf);  
 }
 String WrapperWebconfig::escape(uint16_t text) {
   char buf[6];
-  sprintf (buf, "%u", text);
+  sprintf(buf, "%u", text);
   return String(buf);  
+}
+String WrapperWebconfig::ipToString(ConfigIP ip) {
+  char buf[16];
+  if (ip.a == 0)
+    return "";
+  
+  sprintf(buf, "%d.%d.%d.%d", ip.a, ip.b, ip.c, ip.d);
+  return String(buf);
+}
+void WrapperWebconfig::changeConfig(void) {
+  ConfigStruct cfg = Config::getConfig();
+  for (uint8_t i=0; i<_server.args(); i++){
+    String argName = _server.argName(i);
+    String argValue = _server.arg(i);
+    if (argName == "wifi-ssid" && argValue.length() < sizeof(cfg.wifi.ssid)) {
+      strcpy(cfg.wifi.ssid, argValue.c_str());
+    } else if (argName == "wifi-password" && argValue.length() < sizeof(cfg.wifi.password) && argValue.length() > 0) {
+      //only set if empty (Password field is always empty on the webpage)
+      strcpy(cfg.wifi.password, argValue.c_str());
+    } else if (argName == "wifi-ip") {
+      byte ip[4];
+      parseBytes(argValue.c_str(), '.', ip, 4, 10);
+      cfg.wifi.ip.a = ip[0];
+      cfg.wifi.ip.b = ip[1];
+      cfg.wifi.ip.c = ip[2];
+      cfg.wifi.ip.d = ip[3];
+      //sscanf(argValue.c_str(), "%d.%d.%d.%d", &cfg.wifi.ip.a, &cfg.wifi.ip.b, &cfg.wifi.ip.c, &cfg.wifi.ip.d);
+    } else if (argName == "wifi-subnet") {
+      byte ip[4];
+      parseBytes(argValue.c_str(), '.', ip, 4, 10);
+      cfg.wifi.subnet.a = ip[0];
+      cfg.wifi.subnet.b = ip[1];
+      cfg.wifi.subnet.c = ip[2];
+      cfg.wifi.subnet.d = ip[3];
+      //sscanf(argValue.c_str(), "%d.%d.%d.%d", &cfg.wifi.subnet.a, &cfg.wifi.subnet.b, &cfg.wifi.subnet.c, &cfg.wifi.subnet.d);
+    } else if (argName == "wifi-dns") {
+      byte ip[4];
+      parseBytes(argValue.c_str(), '.', ip, 4, 10);
+      cfg.wifi.dns.a = ip[0];
+      cfg.wifi.dns.b = ip[1];
+      cfg.wifi.dns.c = ip[2];
+      cfg.wifi.dns.d = ip[3];
+      //sscanf(argValue.c_str(), "%d.%d.%d.%d", &cfg.wifi.dns.a, &cfg.wifi.dns.b, &cfg.wifi.dns.c, &cfg.wifi.dns.d);
+    } else if (argName == "wifi-hostname" && argValue.length() < sizeof(cfg.wifi.hostname)) {
+      strcpy(cfg.wifi.hostname, argValue.c_str());
+    } else if (argName == "ports-json") {
+      cfg.ports.jsonServer = argValue.toInt();
+      if (cfg.ports.jsonServer == 0)
+        cfg.ports.jsonServer = 19444;
+    } else if (argName == "ports-udp") {
+      cfg.ports.udpLed = argValue.toInt();
+      if (cfg.ports.udpLed == 0)
+        cfg.ports.udpLed = 19446;
+    }
+  }
+  Config::saveConfig(cfg);
+}
+
+void WrapperWebconfig::parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
+    //sscanf Workardound
+    for (int i = 0; i < maxBytes; i++) {
+        bytes[i] = strtoul(str, NULL, base);  // Convert byte
+        str = strchr(str, sep);               // Find next separator
+        if (str == NULL || *str == '\0') {
+            break;                            // No more separators, exit
+        }
+        str++;                                // Point to next character after separator
+    }
 }
 
 String WrapperWebconfig::htmlTemplate(String title, String content) {
@@ -78,185 +156,102 @@ String WrapperWebconfig::htmlTemplate(String title, String content) {
   return html;
 }
 
+String WrapperWebconfig::groupTemplate(String title, String body) {
+  String html = "";
+  
+  html += "<div class=\"panel panel-default\">";
+  html += "  <div class=\"panel-heading\">" + title + "</div>";
+  html += "  <div class=\"panel-body\">";
+
+  html += body;
+  
+  html += "  </div>";
+  html += "</div>";
+
+  return html;
+}
+
+String WrapperWebconfig::entryTemplate(String title, String id, String content) {
+  String html = "";
+  
+  html += "<div class=\"form-group\">";
+  html += "  <label class=\"col-md-4 control-label\" for=\"" + id + "\">" + title + "</label>";
+  html += "  <div class=\"col-md-4\">";
+  html += content;
+  html += "  </div>";
+  html += "</div>";
+
+  return html;
+}
+
+String WrapperWebconfig::textTemplate(String title, String id, String text, String placeholder = "", int maxLen = 524288) {
+  String html = "";
+
+  html += "<input id=\"" + id + "\" name=\"" + id + "\" type=\"text\" maxlength=\"" + maxLen + "\" placeholder=\"" + placeholder + "\" class=\"form-control input-md\" value=\"" + text + "\">";
+
+  return entryTemplate(title, id, html);
+}
+
+String WrapperWebconfig::selectTemplate(String title, String id, LinkedList<SelectEntryBase*>* entries) {
+  String html = "";
+
+  html += "<select id=\"" + id + "\" name=\"" + id + "\" class=\"form-control\">";
+  for (int i=0; i<entries->size(); i++) {
+    SelectEntryBase *entry = entries->get(i);
+    html += "<option value=\"" + entry->getSelectedValue() + "\"";
+    if (entry->isSelected()) 
+      html += " selected=\"selected\"";
+    html += ">";
+    html += entry->getText();
+    html += "</option>";
+  }
+  html += "</select>";
+
+  return entryTemplate(title, id, html);
+}
+
 String WrapperWebconfig::config(void) {
   String html = "";
+  String groupContent = "";
   boolean wifiReady = true;
+  
+  ConfigStruct cfg = Config::getConfig();
   
   html += "<form class=\"form-horizontal\" method=\"post\">";
   html += "<fieldset>";
 
   html += "<legend>ESP8266 LED Coniguration</legend>";
 
-  html += "<div class=\"panel panel-default\">";
-  html += "  <div class=\"panel-heading\">WiFi</div>";
-  html += "  <div class=\"panel-body\">";
+  groupContent = "";
+  groupContent += textTemplate("WiFi SSID", "wifi-ssid", escape(cfg.wifi.ssid), "", sizeof(cfg.wifi.ssid)-1);
 
-  html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"wifi-ssid\">WiFi SSID</label>";
-  html += "  <div class=\"col-md-4\">";
-  html += "  <input id=\"wifi-ssid\" name=\"wifi-ssid\" type=\"text\" placeholder=\"\" class=\"form-control input-md\" value=\"" + WrapperWebconfig::escape(Config::ssid) + "\">";
-  html += "  </div>";
-  html += "</div>";
+  String passwordPlaceholder = "no password set";
+  if (cfg.wifi.password[0] != 0)
+    passwordPlaceholder = "password saved";
+  groupContent += textTemplate("WiFi Password", "wifi-password", "", passwordPlaceholder, sizeof(cfg.wifi.password)-1);
 
-  html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"wifi-password\">WiFi Password</label>";
-  html += "  <div class=\"col-md-4\">";
-  html += "    <input id=\"wifi-password\" name=\"wifi-password\" type=\"password\" placeholder=\"\" class=\"form-control input-md\">";
-  html += "  </div>";
-  html += "</div>";
-
-  html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"staticIp\">Static IP</label>";
-  html += "  <div class=\"col-md-4\">";
-  html += "    <div class=\"input-group\">";
-  html += "      <span class=\"input-group-addon\">";
-  html += "          <input type=\"checkbox\">";
-  html += "      </span>";
-  html += "      <input id=\"staticIp\" name=\"staticIp\" class=\"form-control\" type=\"text\" placeholder=\"192.168.1.123\">";
-  html += "    </div>";
-  html += "    <p class=\"help-block\">check for static IP</p>";
-  html += "  </div>";
-  html += "</div>";
+  groupContent += textTemplate("IP", "wifi-ip", ipToString(cfg.wifi.ip), "leave empty for dhcp", 15);
+  groupContent += textTemplate("Subnet", "wifi-subnet", ipToString(cfg.wifi.subnet), "255.255.255.0", 15);
+  groupContent += textTemplate("DNS Server", "wifi-dns", ipToString(cfg.wifi.dns), "192.168.1.1", 15);
   
-  html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"subnet\">Subnet</label>";
-  html += "  <div class=\"col-md-4\">";
-  html += "  <input id=\"subnet\" name=\"subnet\" type=\"text\" placeholder=\"255.255.255.0\" class=\"form-control input-md\">";
-  html += "  </div>";
-  html += "</div>";
+  groupContent += textTemplate("Module Hostname", "wifi-hostname", escape(cfg.wifi.hostname), "ESP8266", sizeof(cfg.wifi.hostname)-1);
   
-  html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"dns\">DNS Server</label>";
-  html += "  <div class=\"col-md-4\">";
-  html += "  <input id=\"dns\" name=\"dns\" type=\"text\" placeholder=\"192.168.1.1\" class=\"form-control input-md\">";
-  html += "  </div>";
-  html += "</div>";
-
-  html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"hostname\">Module Hostname</label>";
-  html += "  <div class=\"col-md-4\">";
-  html += "  <input id=\"hostname\" name=\"hostname\" type=\"text\" placeholder=\"ESP8266\" class=\"form-control input-md\" value=\"" + WrapperWebconfig::escape(Config::host) + "\">";
-  html += "  </div>";
-  html += "</div>";
+  html += groupTemplate("WiFi", groupContent);
   
-  html += "  </div>";
-  html += "</div>";
-
   if (wifiReady) {
-    html += "<div class=\"panel panel-default\">";
-    html += "  <div class=\"panel-heading\">Ports</div>";
-    html += "  <div class=\"panel-body\">";
+    groupContent = "";
+    groupContent += textTemplate("JSON Server Port", "ports-json", escape(cfg.ports.jsonServer), "19444", 5);
+    groupContent += textTemplate("UDP LED Port", "ports-udp", escape(cfg.ports.udpLed), "19446", 5);
+    html += groupTemplate("Ports", groupContent);
     
-    html += "<div class=\"form-group\">";
-    html += "  <label class=\"col-md-4 control-label\" for=\"jsonServerPort\">JSON Server Port</label>";
-    html += "  <div class=\"col-md-4\">";
-    html += "  <input id=\"jsonServerPort\" name=\"jsonServerPort\" type=\"text\" placeholder=\"19444\" class=\"form-control input-md\" value=\"" + WrapperWebconfig::escape(Config::jsonServerPort) + "\">";
-    html += "  </div>";
-    html += "</div>";
-  
-    html += "<div class=\"form-group\">";
-    html += "  <label class=\"col-md-4 control-label\" for=\"udpLedPort\">UDP LED Port</label>";
-    html += "  <div class=\"col-md-4\">";
-    html += "  <input id=\"udpLedPort\" name=\"udpLedPort\" type=\"text\" placeholder=\"19446\" class=\"form-control input-md\" value=\"" + WrapperWebconfig::escape(Config::udpLedPort) + "\">";
-    html += "  </div>";
-    html += "</div>";
-
-    html += "  </div>";
-    html += "</div>";
+    groupContent = "";
+    groupContent += selectTemplate("LED Chipset", "led-chipset", _chipsets);
+    groupContent += selectTemplate("LED Color Order", "led-colorOrder", _rgbOrder);
+    groupContent += selectTemplate("LED Data Pin", "led-dataPin", _dataPins);
+    groupContent += selectTemplate("LED Clock Pin", "led-clockPin", _clockPins);
+    groupContent += selectTemplate("LED Idle Mode", "led-idleMode", _idleModes);
+    html += groupTemplate("LEDs", groupContent);
     
-    html += "<div class=\"panel panel-default\">";
-    html += "  <div class=\"panel-heading\">LEDs</div>";
-    html += "  <div class=\"panel-body\">";
-    
-    html += "<div class=\"form-group\">";
-    html += "  <label class=\"col-md-4 control-label\" for=\"chipset\">LED Chipset</label>";
-    html += "  <div class=\"col-md-4\">";
-    html += "    <select id=\"chipset\" name=\"chipset\" class=\"form-control\">";
-    html += "      <option value=\"spi-LPD8806\">LPD8806</option>";
-    html += "      <option value=\"spi-WS2801\">WS2801</option>";
-    html += "      <option value=\"spi-WS2803\">WS2803</option>";
-    html += "      <option value=\"spi-SM16716\">SM16716</option>";
-    html += "      <option value=\"spi-P9813\">P9813</option>";
-    html += "      <option value=\"spi-APA102\">APA102</option>";
-    html += "      <option value=\"spi-DOTSTAR\">DOTSTAR</option>";
-    html += "      <option value=\"clockless-NEOPIXEL\">NEOPIXEL</option>";
-    html += "      <option value=\"clockless-TM1829\">TM1829</option>";
-    html += "      <option value=\"clockless-TM1812\">TM1812</option>";
-    html += "      <option value=\"clockless-TM1809\">TM1809</option>";
-    html += "      <option value=\"clockless-TM1804\">TM1804</option>";
-    html += "      <option value=\"clockless-TM1803\">TM1803</option>";
-    html += "      <option value=\"clockless-UCS1903\">UCS1903</option>";
-    html += "      <option value=\"clockless-UCS1903B\">UCS1903B</option>";
-    html += "      <option value=\"clockless-UCS1904\">UCS1904</option>";
-    html += "      <option value=\"clockless-UCS2903\">UCS2903</option>";
-    html += "      <option value=\"clockless-WS2812\">WS2812</option>";
-    html += "      <option value=\"clockless-WS2812B\">WS2812B</option>";
-    html += "      <option value=\"clockless-SK6812\">SK6812</option>";
-    html += "      <option value=\"clockless-SK6822\">SK6822</option>";
-    html += "      <option value=\"clockless-PL9823\">PL9823</option>";
-    html += "      <option value=\"clockless-WS2811\">WS2811</option>";
-    html += "      <option value=\"clockless-APA104\">APA104</option>";
-    html += "      <option value=\"clockless-WS2811_400\">WS2811_400</option>";
-    html += "      <option value=\"clockless-GW6205\">GW6205</option>";
-    html += "      <option value=\"clockless-GW6205_400\">GW6205_400</option>";
-    html += "      <option value=\"clockless-LPD1886\">LPD1886</option>";
-    html += "    </select>";
-    html += "  </div>";
-    html += "</div>";
-  
-    html += "<div class=\"form-group\">";
-    html += "  <label class=\"col-md-4 control-label\" for=\"colorOrder\">LED Color Order</label>";
-    html += "  <div class=\"col-md-4\"> ";
-    html += "    <label class=\"radio-inline\" for=\"colorOrder-rgb\">";
-    html += "      <input type=\"radio\" name=\"colorOrder\" id=\"colorOrder-rgb\" value=\"RGB\" checked=\"checked\">";
-    html += "      RGB";
-    html += "    </label> ";
-    html += "    <label class=\"radio-inline\" for=\"colorOrder-rbg\">";
-    html += "      <input type=\"radio\" name=\"colorOrder\" id=\"colorOrder-rbg\" value=\"RBG\">";
-    html += "      RBG";
-    html += "    </label> ";
-    html += "    <label class=\"radio-inline\" for=\"colorOrder-gbr\">";
-    html += "      <input type=\"radio\" name=\"colorOrder\" id=\"colorOrder-gbr\" value=\"GBR\">";
-    html += "      GBR";
-    html += "    </label> ";
-    html += "    <label class=\"radio-inline\" for=\"colorOrder-grb\">";
-    html += "      <input type=\"radio\" name=\"colorOrder\" id=\"colorOrder-grb\" value=\"GRB\">";
-    html += "      GRB";
-    html += "    </label> ";
-    html += "    <label class=\"radio-inline\" for=\"colorOrder-brg\">";
-    html += "      <input type=\"radio\" name=\"colorOrder\" id=\"colorOrder-brg\" value=\"BRG\">";
-    html += "      BRG";
-    html += "    </label> ";
-    html += "    <label class=\"radio-inline\" for=\"colorOrder-bgr\">";
-    html += "      <input type=\"radio\" name=\"colorOrder\" id=\"colorOrder-bgr\" value=\"BGR\">";
-    html += "      BGR";
-    html += "    </label>";
-    html += "  </div>";
-    html += "</div>";
-  
-    html += "<div class=\"form-group\">";
-    html += "  <label class=\"col-md-4 control-label\" for=\"ledCount\">LED Count</label>";
-    html += "  <div class=\"col-md-4\">";
-    html += "  <input id=\"ledCount\" name=\"ledCount\" type=\"text\" placeholder=\"\" class=\"form-control input-md\" value=\"" + WrapperWebconfig::escape(Config::ledCount) + "\">";
-    html += "  </div>";
-    html += "</div>";
-  
-    html += "<div class=\"form-group\">";
-    html += "  <label class=\"col-md-4 control-label\" for=\"dataPin\">LED Data Pin</label>";
-    html += "  <div class=\"col-md-4\">";
-    html += "  <input id=\"dataPin\" name=\"dataPin\" type=\"text\" placeholder=\"\" class=\"form-control input-md\" value=\"" + WrapperWebconfig::escape(Config::dataPin) + "\">";
-    html += "  </div>";
-    html += "</div>";
-  
-    html += "<div class=\"form-group\">";
-    html += "  <label class=\"col-md-4 control-label\" for=\"clockPin\">LED Clock Pin</label>";
-    html += "  <div class=\"col-md-4\">";
-    html += "  <input id=\"clockPin\" name=\"clockPin\" type=\"text\" placeholder=\"\" class=\"form-control input-md\" value=\"" + WrapperWebconfig::escape(Config::clockPin) + "\">";
-    html += "  </div>";
-    html += "</div>";
-    
-    html += "  </div>";
-    html += "</div>";
   } else {
     html += "<div class=\"form-group\">";
     html += "More settings visible, when wifi-connection is ready (internet needed for bootstrap)";
@@ -274,5 +269,96 @@ String WrapperWebconfig::config(void) {
   html += "</form>";
 
   return html;
+}
+
+void WrapperWebconfig::initHelperVars(void) {
+  ConfigStruct cfg = Config::getConfig();
+
+  _chipsets = new LinkedList<SelectEntryBase*>();
+  _dataPins = new LinkedList<SelectEntryBase*>();
+  _clockPins = new LinkedList<SelectEntryBase*>();
+  _rgbOrder = new LinkedList<SelectEntryBase*>();
+  _idleModes = new LinkedList<SelectEntryBase*>();
+  
+  getChipsets(0, _chipsets);
+  getAllPins(cfg.led.dataPin, _dataPins);
+  getAllPins(cfg.led.clockPin, _clockPins);
+  getRgbOrder(cfg.led.colorOrder, _rgbOrder);
+  getIdleModes(cfg.led.idleMode, _idleModes);
+}
+void WrapperWebconfig::clearHelperVars(void) {
+  clearLinkedList(_chipsets);
+  clearLinkedList(_dataPins);
+  clearLinkedList(_clockPins);
+  clearLinkedList(_rgbOrder);
+  clearLinkedList(_idleModes);
+}
+void WrapperWebconfig::clearLinkedList(LinkedList<SelectEntryBase*>* target) {
+  for (int i=0; i<target->size(); i++) {
+    SelectEntryBase* entry = target->get(i);
+    delete(entry);
+  }
+  target->clear();
+  delete(target);
+}
+
+void WrapperWebconfig::getChipsets(uint8_t active, LinkedList<SelectEntryBase*>* target) {
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-LPD8806", "LPD8806", active == LPD8806, LPD8806));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2801", "WS2801", active == WS2801, WS2801));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2803", "WS2803", active == WS2803, WS2803));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-SM16716", "SM16716", active == SM16716, SM16716));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-P9813", "P9813", active == P9813, P9813));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-APA102", "APA102", active == APA102, APA102));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-DOTSTAR", "DOTSTAR", active == DOTSTAR, DOTSTAR));
+  /*
+  target->add((SelectEntryBase*) new SelectEntry<NEOPIXEL>("clockless-NEOPIXEL","NEOPIXEL", false, NEOPIXEL));
+  target->add((SelectEntryBase*) new SelectEntry<TM1829>("clockless-TM1829","TM1829", false, TM1829));
+  target->add((SelectEntryBase*) new SelectEntry<TM1812>("clockless-TM1812","TM1812", false, TM1812));
+  target->add((SelectEntryBase*) new SelectEntry<TM1809>("clockless-TM1809","TM1809", false, TM1809));
+  target->add((SelectEntryBase*) new SelectEntry<TM1804>("clockless-TM1804","TM1804", false, TM1804));
+  target->add((SelectEntryBase*) new SelectEntry<TM1803>("clockless-TM1803","TM1803", false, TM1803));
+  target->add((SelectEntryBase*) new SelectEntry<UCS1903>("clockless-UCS1903","UCS1903", false, UCS1903));
+  target->add((SelectEntryBase*) new SelectEntry<UCS1903B>("clockless-UCS1903B","UCS1903B", false, UCS1903B));
+  target->add((SelectEntryBase*) new SelectEntry<UCS1904>("clockless-UCS1904","UCS1904", false, UCS1904));
+  target->add((SelectEntryBase*) new SelectEntry<UCS2903>("clockless-UCS2903","UCS2903", false, UCS2903));
+  target->add((SelectEntryBase*) new SelectEntry<WS2812>("clockless-WS2812","WS2812", false, WS2812));
+  target->add((SelectEntryBase*) new SelectEntry<WS2812B>("clockless-WS2812B","WS2812B", false, WS2812B));
+  target->add((SelectEntryBase*) new SelectEntry<SK6812>("clockless-SK6812","SK6812", false, SK6812));
+  target->add((SelectEntryBase*) new SelectEntry<SK6822>("clockless-SK6822","SK6822", false, SK6822));
+  target->add((SelectEntryBase*) new SelectEntry<PL9823>("clockless-PL9823","PL9823", false, PL9823));
+  target->add((SelectEntryBase*) new SelectEntry<WS2811>("clockless-WS2811","WS2811", false, WS2811));
+  target->add((SelectEntryBase*) new SelectEntry<APA104>("clockless-APA104","APA104", false, APA104));
+  target->add((SelectEntryBase*) new SelectEntry<WS2811_400>("clockless-WS2811_400","WS2811_400", false, WS2811_400));
+  target->add((SelectEntryBase*) new SelectEntry<GW6205>("clockless-GW6205","GW6205", false, GW6205));
+  target->add((SelectEntryBase*) new SelectEntry<GW6205_400>("clockless-GW6205_400","GW6205_400", false, GW6205_400));
+  target->add((SelectEntryBase*) new SelectEntry<LPD1886>("clockless-LPD1886","LPD1886", false, LPD1886));*/
+}
+
+void WrapperWebconfig::getAllPins(uint8_t active, LinkedList<SelectEntryBase*>* target) {
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D0", "D0 (LED)", active == D0, D0));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D1", "D1", active == D1, D1));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D2", "D2", active == D2, D2));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D3", "D3", active == D3, D3));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D4", "D4", active == D4, D4));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D5", "D5", active == D5, D5));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D6", "D6", active == D6, D6));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D7", "D7", active == D7, D7));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D8", "D8", active == D8, D8));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D9", "D9 (RX)", active == D9, D9));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D10", "D10 (TX)", active == D10, D10));
+}
+
+void WrapperWebconfig::getRgbOrder(uint8_t active, LinkedList<SelectEntryBase*>* target) {
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("RGB", "RGB", active == RGB, RGB));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("RBG", "RBG", active == RBG, RBG));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("GBR", "GBR", active == GBR, GBR));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("GRB", "GRB", active == GRB, GRB));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("BRG", "BRG", active == BRG, BRG));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("BGR", "BGR", active == BGR, BGR));
+}
+void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target) {
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Rainbow", "Rainbow", active == RAINBOW, RAINBOW));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Static", "Static color", active == STATIC_COLOR, STATIC_COLOR));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Off", "Off", active == OFF, OFF));
 }
 

@@ -1,3 +1,4 @@
+
 #include <Thread.h>
 #include <ThreadController.h>
 
@@ -12,7 +13,7 @@
 
 #include "BaseHeader.h"
 
-#define LED     D0 // LED in NodeMCU at pin GPIO16 (D0).
+#define LED D0 // LED in NodeMCU at pin GPIO16 (D0).
 
 WrapperWiFi wifi = WrapperWiFi(Config::ssid, Config::password);
 
@@ -27,7 +28,6 @@ WrapperJsonServer jsonServer = WrapperJsonServer(Config::ledCount, Config::jsonS
 
 WrapperWebconfig webServer = WrapperWebconfig();
 
-enum Mode { RAINBOW, STATIC_COLOR, AMBILIGHT };
 Mode activeMode = RAINBOW;
 
 ThreadController threadController = ThreadController();
@@ -102,7 +102,7 @@ void resetMode(void) {
 
 void setup(void) {
   Log.init(LOGLEVEL, 115200);
-  Serial.setDebugOutput(true);
+  //Serial.setDebugOutput(true);
 
   resetMode();
 

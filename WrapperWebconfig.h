@@ -18,6 +18,8 @@ class SelectEntryBase {
     String getSelectedValue(void) { return _selectedValue; };
     String getText(void) { return _text; };
     boolean isSelected(void) { return _selected; };
+    
+    void setSelected(boolean selected) { _selected = selected; };
   private:    
     String _selectedValue;
     String _text;
@@ -70,11 +72,14 @@ class WrapperWebconfig {
       getAllPins(uint8_t active, LinkedList<SelectEntryBase*>* target),
       getRgbOrder(uint8_t active, LinkedList<SelectEntryBase*>* target),
       getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target);
+
+    template<typename T>
+    T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);
     
     LinkedList<SelectEntryBase*>* _chipsets;
+    LinkedList<SelectEntryBase*>* _rgbOrder;
     LinkedList<SelectEntryBase*>* _dataPins;
     LinkedList<SelectEntryBase*>* _clockPins;
-    LinkedList<SelectEntryBase*>* _rgbOrder;
     LinkedList<SelectEntryBase*>* _idleModes;
     
     ESP8266WebServer _server;

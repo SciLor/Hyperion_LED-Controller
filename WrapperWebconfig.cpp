@@ -109,6 +109,16 @@ void WrapperWebconfig::changeConfig(void) {
       cfg.ports.udpLed = argValue.toInt();
       if (cfg.ports.udpLed == 0)
         cfg.ports.udpLed = 19446;
+    } else if (argName == "led-chipset") {
+      cfg.led.chipset = getSelectedEntry<uint8_t>(argValue, _chipsets);
+    } else if (argName == "led-colorOrder") {
+      cfg.led.colorOrder = getSelectedEntry<uint8_t>(argValue, _rgbOrder);
+    } else if (argName == "led-dataPin") {
+      cfg.led.dataPin = getSelectedEntry<uint8_t>(argValue, _dataPins);
+    } else if (argName == "led-clockPin") {
+      cfg.led.clockPin = getSelectedEntry<uint8_t>(argValue, _clockPins);
+    } else if (argName == "led-idleMode") {
+      cfg.led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
     }
   }
   Config::saveConfig(cfg);
@@ -213,9 +223,14 @@ String WrapperWebconfig::selectTemplate(String title, String id, LinkedList<Sele
 String WrapperWebconfig::config(void) {
   String html = "";
   String groupContent = "";
-  boolean wifiReady = true;
+  boolean wifiReady = false;
   
   ConfigStruct cfg = Config::getConfig();
+
+  if (cfg.wifi.ssid[0] != 0) {
+    //check Wifi
+    wifiReady = true;
+  }
   
   html += "<form class=\"form-horizontal\" method=\"post\">";
   html += "<fieldset>";
@@ -254,7 +269,7 @@ String WrapperWebconfig::config(void) {
     
   } else {
     html += "<div class=\"form-group\">";
-    html += "More settings visible, when wifi-connection is ready (internet needed for bootstrap)";
+    html += "More settings visible, when wifi-connection is ready (internet needed for design)";
     html += "</div>";
   }
   
@@ -275,15 +290,15 @@ void WrapperWebconfig::initHelperVars(void) {
   ConfigStruct cfg = Config::getConfig();
 
   _chipsets = new LinkedList<SelectEntryBase*>();
+  _rgbOrder = new LinkedList<SelectEntryBase*>();
   _dataPins = new LinkedList<SelectEntryBase*>();
   _clockPins = new LinkedList<SelectEntryBase*>();
-  _rgbOrder = new LinkedList<SelectEntryBase*>();
   _idleModes = new LinkedList<SelectEntryBase*>();
   
-  getChipsets(0, _chipsets);
+  getChipsets(cfg.led.chipset, _chipsets);
+  getRgbOrder(cfg.led.colorOrder, _rgbOrder);
   getAllPins(cfg.led.dataPin, _dataPins);
   getAllPins(cfg.led.clockPin, _clockPins);
-  getRgbOrder(cfg.led.colorOrder, _rgbOrder);
   getIdleModes(cfg.led.idleMode, _idleModes);
 }
 void WrapperWebconfig::clearHelperVars(void) {
@@ -300,6 +315,22 @@ void WrapperWebconfig::clearLinkedList(LinkedList<SelectEntryBase*>* target) {
   }
   target->clear();
   delete(target);
+}
+
+template<typename T>
+T WrapperWebconfig::getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target) {
+  T result;
+  SelectEntry<T>* entry;
+  for (int i=0; i<target->size(); i++) {
+    entry = (SelectEntry<T>*)target->get(i);
+    if (entry->getSelectedValue() == selectedEntryValue) {
+      result = entry->getValue();
+      entry->setSelected(true);
+    } else {
+      entry->setSelected(false);
+    }
+  }
+  return result;
 }
 
 void WrapperWebconfig::getChipsets(uint8_t active, LinkedList<SelectEntryBase*>* target) {

@@ -125,7 +125,7 @@ void WrapperWebconfig::changeConfig(void) {
 }
 
 void WrapperWebconfig::parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
-    //sscanf Workardound
+    //sscanf Workaround
     for (int i = 0; i < maxBytes; i++) {
         bytes[i] = strtoul(str, NULL, base);  // Convert byte
         str = strchr(str, sep);               // Find next separator

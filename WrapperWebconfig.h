@@ -8,7 +8,7 @@
 
 class SelectEntryBase {
   public:
-    SelectEntryBase() { };
+    SelectEntryBase() {};
     SelectEntryBase(String selectedValue, String text, boolean selected) {
       _selectedValue = selectedValue;
       _text = text;
@@ -82,8 +82,7 @@ class WrapperWebconfig {
     LinkedList<SelectEntryBase*>* _clockPins;
     LinkedList<SelectEntryBase*>* _idleModes;
     
-    ESP8266WebServer _server;
-    int _port = 80;
+    ESP8266WebServer _server = ESP8266WebServer(80);
 };
 
 #endif

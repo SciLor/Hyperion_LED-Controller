@@ -22,15 +22,16 @@ void WrapperUdpLed::begin(void) {
 
 void WrapperUdpLed::handle(void) {
   int bytes = _udp.parsePacket();
-  if (bytes > 0)
+  if (bytes > 0) {
     Log.debug("UDP-Packet received, length: %i", bytes);
-  if (bytes == _bufferSize) {
-    _udp.readBytes(_udpBuffer, _bufferSize);
-    Log.debug("Contents: %s", _udpBuffer);
-    for (int i=0; i<_ledCount; i++) {
-      updateLed(i, _udpBuffer[i*3+0], _udpBuffer[i*3+1], _udpBuffer[i*3+2]);
+    if (bytes == _bufferSize) {
+      _udp.readBytes(_udpBuffer, _bufferSize);
+      Log.debug("Contents: %s", _udpBuffer);
+      for (int i=0; i<_ledCount; i++) {
+        updateLed(i, _udpBuffer[i*3+0], _udpBuffer[i*3+1], _udpBuffer[i*3+2]);
+      }
+      refreshLeds();
     }
-    refreshLeds();
   }
 }
 

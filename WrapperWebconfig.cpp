@@ -1,7 +1,6 @@
 #include "WrapperWebconfig.h"
 
-void WrapperWebconfig::begin() {    
-  _server = ESP8266WebServer(_port);
+void WrapperWebconfig::begin() {
   _server.onNotFound([&](){ WrapperWebconfig::handleNotFound(); });
   _server.on("/", [&](){ WrapperWebconfig::handleRoot(); });
   _server.begin();
@@ -34,9 +33,11 @@ void WrapperWebconfig::handleRoot(void) {
     Log.debug("POST HEAP=%i", ESP.getFreeHeap());
     changeConfig();
   }
-  String message = htmlTemplate("ESP8266 LED Configuration", WrapperWebconfig::config());
   clearHelperVars();
-  Log.debug("Webconfig cleared HEAP=%i", ESP.getFreeHeap());
+  String message = htmlTemplate("ESP8266 LED Configuration", WrapperWebconfig::config());
+  Log.debug("Webconfig max HEAP=%i", ESP.getFreeHeap());
+  
+  //Log.debug("Webconfig cleared HEAP=%i", ESP.getFreeHeap());
   _server.send(200, "text/html", message);
   Log.debug("Webconfig sent HEAP=%i", ESP.getFreeHeap());
 }
@@ -70,6 +71,9 @@ void WrapperWebconfig::changeConfig(void) {
   for (uint8_t i=0; i<_server.args(); i++){
     String argName = _server.argName(i);
     String argValue = _server.arg(i);
+
+    Log.debug("Config: \"%s\":\"%s\"", argName.c_str(), argValue.c_str());
+    
     if (argName == "wifi-ssid" && argValue.length() < sizeof(cfg.wifi.ssid)) {
       strcpy(cfg.wifi.ssid, argValue.c_str());
     } else if (argName == "wifi-password" && argValue.length() < sizeof(cfg.wifi.password) && argValue.length() > 0) {
@@ -117,6 +121,10 @@ void WrapperWebconfig::changeConfig(void) {
       cfg.led.dataPin = getSelectedEntry<uint8_t>(argValue, _dataPins);
     } else if (argName == "led-clockPin") {
       cfg.led.clockPin = getSelectedEntry<uint8_t>(argValue, _clockPins);
+    } else if (argName == "led-count") {
+      cfg.led.count = argValue.toInt();
+      if (cfg.led.count == 0)
+        cfg.led.count = 1;
     } else if (argName == "led-idleMode") {
       cfg.led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
     }
@@ -170,14 +178,14 @@ String WrapperWebconfig::groupTemplate(String title, String body) {
   String html = "";
   
   html += "<div class=\"panel panel-default\">";
-  html += "  <div class=\"panel-heading\">" + title + "</div>";
-  html += "  <div class=\"panel-body\">";
+  html +=   "<div class=\"panel-heading\">" + title + "</div>";
+  html +=   "<div class=\"panel-body\">";
 
   html += body;
   
-  html += "  </div>";
+  html +=   "</div>";
   html += "</div>";
-
+  
   return html;
 }
 
@@ -185,10 +193,10 @@ String WrapperWebconfig::entryTemplate(String title, String id, String content) 
   String html = "";
   
   html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"" + id + "\">" + title + "</label>";
-  html += "  <div class=\"col-md-4\">";
+  html +=   "<label class=\"col-md-4 control-label\" for=\"" + id + "\">" + title + "</label>";
+  html +=   "<div class=\"col-md-4\">";
   html += content;
-  html += "  </div>";
+  html +=   "</div>";
   html += "</div>";
 
   return html;
@@ -258,13 +266,35 @@ String WrapperWebconfig::config(void) {
     groupContent += textTemplate("JSON Server Port", "ports-json", escape(cfg.ports.jsonServer), "19444", 5);
     groupContent += textTemplate("UDP LED Port", "ports-udp", escape(cfg.ports.udpLed), "19446", 5);
     html += groupTemplate("Ports", groupContent);
-    
     groupContent = "";
+    
+    _chipsets = new LinkedList<SelectEntryBase*>();
+    getChipsets(cfg.led.chipset, _chipsets);
     groupContent += selectTemplate("LED Chipset", "led-chipset", _chipsets);
+    clearLinkedList(_chipsets);
+
+    _rgbOrder = new LinkedList<SelectEntryBase*>();
+    getRgbOrder(cfg.led.colorOrder, _rgbOrder);
     groupContent += selectTemplate("LED Color Order", "led-colorOrder", _rgbOrder);
+    clearLinkedList(_rgbOrder);
+
+    _dataPins = new LinkedList<SelectEntryBase*>();
+    getAllPins(cfg.led.dataPin, _dataPins);
     groupContent += selectTemplate("LED Data Pin", "led-dataPin", _dataPins);
+    clearLinkedList(_dataPins);
+
+    _clockPins = new LinkedList<SelectEntryBase*>();
+    getAllPins(cfg.led.clockPin, _clockPins);
     groupContent += selectTemplate("LED Clock Pin", "led-clockPin", _clockPins);
+    clearLinkedList(_clockPins);
+    
+    groupContent += textTemplate("LED Count", "led-count", escape(cfg.led.count), "", 5);
+
+    _idleModes = new LinkedList<SelectEntryBase*>();
+    getIdleModes(cfg.led.idleMode, _idleModes);
     groupContent += selectTemplate("LED Idle Mode", "led-idleMode", _idleModes);
+    clearLinkedList(_idleModes);
+    
     html += groupTemplate("LEDs", groupContent);
     
   } else {
@@ -274,10 +304,10 @@ String WrapperWebconfig::config(void) {
   }
   
   html += "<div class=\"form-group\">";
-  html += "  <label class=\"col-md-4 control-label\" for=\"save\"></label>";
-  html += "  <div class=\"col-md-4\">";
-  html += "    <button id=\"save\" name=\"save\" class=\"btn btn-primary\">Save Settings</button>";
-  html += "  </div>";
+  html +=   "<label class=\"col-md-4 control-label\" for=\"save\"></label>";
+  html +=   "<div class=\"col-md-4\">";
+  html +=     "<button id=\"save\" name=\"save\" class=\"btn btn-primary\">Save Settings</button>";
+  html +=   "</div>";
   html += "</div>";
   
   html += "</fieldset>";
@@ -303,18 +333,20 @@ void WrapperWebconfig::initHelperVars(void) {
 }
 void WrapperWebconfig::clearHelperVars(void) {
   clearLinkedList(_chipsets);
+  clearLinkedList(_rgbOrder);
   clearLinkedList(_dataPins);
   clearLinkedList(_clockPins);
-  clearLinkedList(_rgbOrder);
   clearLinkedList(_idleModes);
 }
 void WrapperWebconfig::clearLinkedList(LinkedList<SelectEntryBase*>* target) {
+  Log.debug("Clearing LinkedList HEAP=%i", ESP.getFreeHeap());
   for (int i=0; i<target->size(); i++) {
     SelectEntryBase* entry = target->get(i);
     delete(entry);
   }
   target->clear();
   delete(target);
+  Log.debug("Cleared LinkedList HEAP=%i", ESP.getFreeHeap());
 }
 
 template<typename T>
@@ -334,13 +366,13 @@ T WrapperWebconfig::getSelectedEntry(String selectedEntryValue, LinkedList<Selec
 }
 
 void WrapperWebconfig::getChipsets(uint8_t active, LinkedList<SelectEntryBase*>* target) {
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-LPD8806", "LPD8806", active == LPD8806, LPD8806));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2801", "WS2801", active == WS2801, WS2801));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2803", "WS2803", active == WS2803, WS2803));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-SM16716", "SM16716", active == SM16716, SM16716));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-P9813", "P9813", active == P9813, P9813));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-APA102", "APA102", active == APA102, APA102));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-DOTSTAR", "DOTSTAR", active == DOTSTAR, DOTSTAR));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-LPD8806", "LPD8806", active == SPI_LPD8806, SPI_LPD8806));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2801", "WS2801", active == SPI_WS2801, SPI_WS2801));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2803", "WS2803", active == SPI_WS2803, SPI_WS2803));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-SM16716", "SM16716", active == SPI_SM16716, SPI_SM16716));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-P9813", "P9813", active == SPI_P9813, SPI_P9813));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-APA102", "APA102", active == SPI_APA102, SPI_APA102));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-DOTSTAR", "DOTSTAR", active == SPI_DOTSTAR, SPI_DOTSTAR));
   /*
   target->add((SelectEntryBase*) new SelectEntry<NEOPIXEL>("clockless-NEOPIXEL","NEOPIXEL", false, NEOPIXEL));
   target->add((SelectEntryBase*) new SelectEntry<TM1829>("clockless-TM1829","TM1829", false, TM1829));
@@ -366,7 +398,7 @@ void WrapperWebconfig::getChipsets(uint8_t active, LinkedList<SelectEntryBase*>*
 }
 
 void WrapperWebconfig::getAllPins(uint8_t active, LinkedList<SelectEntryBase*>* target) {
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D0", "D0 (LED)", active == D0, D0));
+  //target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D0", "D0 (LED)", active == D0, D0));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D1", "D1", active == D1, D1));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D2", "D2", active == D2, D2));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D3", "D3", active == D3, D3));

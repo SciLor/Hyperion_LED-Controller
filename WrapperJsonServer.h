@@ -10,7 +10,9 @@
 
 class WrapperJsonServer {
   public:
+    WrapperJsonServer();
     WrapperJsonServer(uint16_t ledCount, uint16_t tcpPort);
+    
     void
       begin(void),
       handle(void);

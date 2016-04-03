@@ -1,5 +1,8 @@
 #include "WrapperJsonServer.h"
 
+WrapperJsonServer::WrapperJsonServer()
+  : _tcpServer(0) {}
+
 WrapperJsonServer::WrapperJsonServer(uint16_t ledCount, uint16_t tcpPort)
   : _tcpServer(tcpPort) {
   _ledCount = ledCount;

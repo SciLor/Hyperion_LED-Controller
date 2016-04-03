@@ -6,12 +6,9 @@
 
 class WrapperOTA {
   public:
-    WrapperOTA(const char* hostname);
     void
-      begin(void),
+      begin(const char* hostname),
       handle(void);
-  private:
-    const char* _hostname;
 };
 
 #endif

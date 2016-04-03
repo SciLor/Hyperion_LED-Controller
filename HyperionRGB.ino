@@ -4,6 +4,8 @@
 
 #include "EnhancedThread.h"
 
+#include "LoggerInit.h"
+
 #include "WrapperWiFi.h"
 #include "WrapperOTA.h"
 #include "WrapperFastLed.h"
@@ -14,21 +16,21 @@
 #include "BaseHeader.h"
 
 #define LED D0 // LED in NodeMCU at pin GPIO16 (D0).
-
-WrapperWiFi wifi = WrapperWiFi(Config::ssid, Config::password);
-
-WrapperOTA ota = WrapperOTA(Config::host);
-
 int ledState = LOW;
 
-WrapperFastLed ledStrip = WrapperFastLed();
+LoggerInit loggerInit;
 
-WrapperUdpLed udpLed = WrapperUdpLed(Config::ledCount, Config::udpLedPort);
-WrapperJsonServer jsonServer = WrapperJsonServer(Config::ledCount, Config::jsonServerPort);
+WrapperWiFi wifi;
+WrapperOTA ota;
 
-WrapperWebconfig webServer = WrapperWebconfig();
+WrapperFastLed ledStrip;
 
-Mode activeMode = RAINBOW;
+WrapperUdpLed udpLed;
+WrapperJsonServer jsonServer;
+
+WrapperWebconfig webServer;
+
+Mode activeMode;
 
 ThreadController threadController = ThreadController();
 Thread statusThread = Thread();
@@ -101,9 +103,19 @@ void resetMode(void) {
 }
 
 void setup(void) {
-  Log.init(LOGLEVEL, 115200);
-  //Serial.setDebugOutput(true);
+  LoggerInit loggerInit = LoggerInit(115200);
+  
+  wifi = WrapperWiFi(Config::ssid, Config::password);
 
+  ota = WrapperOTA();
+  ledStrip = WrapperFastLed();
+  
+  //udpLed = WrapperUdpLed(Config::getConfig().led.count, Config::getConfig().ports.udpLed);
+  //jsonServer = WrapperJsonServer(Config::getConfig().led.count, Config::getConfig().ports.jsonServer);
+  udpLed = WrapperUdpLed(Config::ledCount, Config::udpLedPort);
+  jsonServer = WrapperJsonServer(Config::ledCount, Config::jsonServerPort);
+  webServer = WrapperWebconfig();
+   
   resetMode();
 
   statusThread.onRun(statusInfo);
@@ -120,8 +132,10 @@ void setup(void) {
 
   wifi.begin();
   webServer.begin();
-  ota.begin();
-  ledStrip.begin(Config::chipset, Config::dataPin, Config::clockPin, Config::ledCount, Config::colorOrder);
+  ota.begin(Config::getConfig().wifi.hostname);
+  //ledStrip.begin(Config::getConfig().led.chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, Config::getConfig().led.colorOrder, Config::getConfig().led.count);
+  ledStrip.begin(Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder, Config::ledCount);
+  //ledStrip.begin(Config::chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, Config::colorOrder, Config::getConfig().led.count);
 
   udpLed.begin();
   udpLed.onUpdateLed(updateLed);

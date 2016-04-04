@@ -29,9 +29,7 @@ void WrapperJsonServer::handleConnection(boolean newClient) {
   if (_tcpClient.connected()) {
     if (newClient) {
       Log.info("TCP-Client connected");
-      _tcpClient.println();
     }
-    
     while (_tcpClient.available()) {
       readData();
     }

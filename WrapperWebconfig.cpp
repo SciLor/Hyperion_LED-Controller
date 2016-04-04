@@ -68,6 +68,7 @@ String WrapperWebconfig::ipToString(ConfigIP ip) {
 }
 void WrapperWebconfig::changeConfig(void) {
   ConfigStruct cfg = Config::getConfig();
+  boolean restart = false;
   for (uint8_t i=0; i<_server.args(); i++){
     String argName = _server.argName(i);
     String argValue = _server.arg(i);
@@ -127,9 +128,13 @@ void WrapperWebconfig::changeConfig(void) {
         cfg.led.count = 1;
     } else if (argName == "led-idleMode") {
       cfg.led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
+    } else if (argName == "saveRestart") {
+      restart = true;
     }
   }
   Config::saveConfig(cfg);
+  if (restart)
+    ESP.restart();
 }
 
 void WrapperWebconfig::parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
@@ -307,6 +312,13 @@ String WrapperWebconfig::config(void) {
   html +=   "<label class=\"col-md-4 control-label\" for=\"save\"></label>";
   html +=   "<div class=\"col-md-4\">";
   html +=     "<button id=\"save\" name=\"save\" class=\"btn btn-primary\">Save Settings</button>";
+  html +=   "</div>";
+  html += "</div>";
+  
+  html += "<div class=\"form-group\">";
+  html +=   "<label class=\"col-md-4 control-label\" for=\"saveRestart\"></label>";
+  html +=   "<div class=\"col-md-4\">";
+  html +=     "<button id=\"saveRestart\" name=\"saveRestart\" class=\"btn btn-primary\">Save &amp; restart</button>";
   html +=   "</div>";
   html += "</div>";
   

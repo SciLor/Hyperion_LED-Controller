@@ -110,10 +110,8 @@ void setup(void) {
   ota = WrapperOTA();
   ledStrip = WrapperFastLed();
   
-  //udpLed = WrapperUdpLed(Config::getConfig().led.count, Config::getConfig().ports.udpLed);
-  //jsonServer = WrapperJsonServer(Config::getConfig().led.count, Config::getConfig().ports.jsonServer);
-  udpLed = WrapperUdpLed(Config::ledCount, Config::udpLedPort);
-  jsonServer = WrapperJsonServer(Config::ledCount, Config::jsonServerPort);
+  udpLed = WrapperUdpLed(Config::getConfig().led.count, Config::getConfig().ports.udpLed);
+  jsonServer = WrapperJsonServer(Config::getConfig().led.count, Config::getConfig().ports.jsonServer);
   webServer = WrapperWebconfig();
    
   resetMode();
@@ -134,8 +132,12 @@ void setup(void) {
   webServer.begin();
   ota.begin(Config::getConfig().wifi.hostname);
   //ledStrip.begin(Config::getConfig().led.chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, Config::getConfig().led.colorOrder, Config::getConfig().led.count);
-  ledStrip.begin(Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder, Config::ledCount);
-  //ledStrip.begin(Config::chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, Config::colorOrder, Config::getConfig().led.count);
+  //ledStrip.begin(Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder, Config::ledCount);
+  
+  uint8_t chipset = Config::getConfig().led.chipset;
+  uint8_t colorOrder = Config::getConfig().led.colorOrder;
+  uint16_t ledCount = Config::getConfig().led.count;
+  ledStrip.begin(chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, colorOrder, ledCount);
 
   udpLed.begin();
   udpLed.onUpdateLed(updateLed);

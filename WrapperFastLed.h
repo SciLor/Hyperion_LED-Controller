@@ -7,7 +7,7 @@
 class WrapperFastLed {
   public:
     void
-      begin(const uint8_t chipset, const uint8_t dataPin, const uint8_t clockPin, const uint8_t colorOrder, const uint16_t ledCount),
+      begin(uint8_t chipset, uint8_t dataPin, uint8_t clockPin, uint8_t colorOrder, uint16_t ledCount),
       show(void),
       clear(void),
       fillSolid(CRGB color),
@@ -18,7 +18,7 @@ class WrapperFastLed {
       
   private: 
     void 
-      addLeds(const uint8_t chipset, const uint8_t dataPin, const uint8_t clockPin, const uint8_t colorOrder, const uint16_t ledCount);
+      addLeds(uint8_t chipset, uint8_t dataPin, uint8_t clockPin, uint8_t colorOrder, uint16_t ledCount);
       
     CRGB wheel(byte wheelPos);
     byte _rainbowStepState;

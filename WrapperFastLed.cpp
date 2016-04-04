@@ -89,9 +89,8 @@
 
 #define addLedsFinal(chipset, dataPin, clockPin, colorOrder, ledCount) FastLED.addLeds<chipset, dataPin, clockPin, colorOrder>(leds, ledCount); \
 
-void WrapperFastLed::begin(const uint8_t chipset, uint8_t dataPin, const uint8_t clockPin, const uint8_t colorOrder, const uint16_t ledCount) {
+void WrapperFastLed::begin(uint8_t chipset, uint8_t dataPin, uint8_t clockPin, uint8_t colorOrder, uint16_t ledCount) {
   Log.debug("Chipset=%i, dataPin=%i, clockPin=%i, colorOrder=%i, ledCount=%i", chipset, dataPin, clockPin, colorOrder, ledCount);
-  
   _ledCount = ledCount;
   leds = new CRGB[_ledCount];
 
@@ -101,7 +100,7 @@ void WrapperFastLed::begin(const uint8_t chipset, uint8_t dataPin, const uint8_t
   addLeds(chipset, dataPin, clockPin, colorOrder, _ledCount);
 }
 
-void WrapperFastLed::addLeds(const uint8_t chipset, const uint8_t dataPin, const uint8_t clockPin, const uint8_t colorOrder, const uint16_t ledCount) {
+void WrapperFastLed::addLeds(uint8_t chipset, uint8_t dataPin, uint8_t clockPin, uint8_t colorOrder, uint16_t ledCount) {
   Chipset eChipset = static_cast<Chipset>(chipset);
   EOrder eColorOrder = static_cast<EOrder>(colorOrder);
 

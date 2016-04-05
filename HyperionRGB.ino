@@ -1,6 +1,7 @@
 
 #include <Thread.h>
 #include <ThreadController.h>
+#include "BaseHeader.h"
 
 #include "EnhancedThread.h"
 
@@ -11,9 +12,10 @@
 #include "WrapperFastLed.h"
 #include "WrapperUdpLed.h"
 #include "WrapperJsonServer.h"
-#include "WrapperWebconfig.h"
 
-#include "BaseHeader.h"
+#ifdef CONFIG_TYPE_WEBCONFIG
+  #include "WrapperWebconfig.h"
+#endif
 
 #define LED D0 // LED in NodeMCU at pin GPIO16 (D0).
 int ledState = LOW;
@@ -28,7 +30,9 @@ WrapperFastLed ledStrip;
 WrapperUdpLed udpLed;
 WrapperJsonServer jsonServer;
 
-WrapperWebconfig webServer;
+#ifdef CONFIG_TYPE_WEBCONFIG
+  WrapperWebconfig webServer;
+#endif
 
 Mode activeMode;
 
@@ -62,7 +66,9 @@ void handleEvents(void) {
   ota.handle();
   udpLed.handle();
   jsonServer.handle();
-  webServer.handle();
+  #ifdef CONFIG_TYPE_WEBCONFIG
+    webServer.handle();
+  #endif
 
   threadController.run();
 }
@@ -104,16 +110,21 @@ void resetMode(void) {
 
 void setup(void) {
   LoggerInit loggerInit = LoggerInit(115200);
-  
-  wifi = WrapperWiFi(Config::ssid, Config::password);
 
+  #ifdef CONFIG_TYPE_WEBCONFIG
+    wifi = WrapperWiFi(Config::getConfig().wifi.ssid, Config::getConfig().wifi.password); //TODO Fallback
+    udpLed = WrapperUdpLed(Config::getConfig().led.count, Config::getConfig().ports.udpLed);
+    jsonServer = WrapperJsonServer(Config::getConfig().led.count, Config::getConfig().ports.jsonServer);
+    webServer = WrapperWebconfig();
+  #elif CONFIG_TYPE_STATIC_CONFIG
+    wifi = WrapperWiFi(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    udpLed = WrapperUdpLed(CONFIG_LED_COUNT, CONFIG_PORT_UDP_LED);
+    jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, CONFIG_PORT_JSON_SERVER);
+  #endif
+  
   ota = WrapperOTA();
   ledStrip = WrapperFastLed();
   
-  udpLed = WrapperUdpLed(Config::getConfig().led.count, Config::getConfig().ports.udpLed);
-  jsonServer = WrapperJsonServer(Config::getConfig().led.count, Config::getConfig().ports.jsonServer);
-  webServer = WrapperWebconfig();
-   
   resetMode();
 
   statusThread.onRun(statusInfo);
@@ -129,16 +140,19 @@ void setup(void) {
   threadController.add(&resetThread);
 
   wifi.begin();
-  webServer.begin();
-  ota.begin(Config::getConfig().wifi.hostname);
-  //ledStrip.begin(Config::getConfig().led.chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, Config::getConfig().led.colorOrder, Config::getConfig().led.count);
-  //ledStrip.begin(Config::chipset, Config::dataPin, Config::clockPin, Config::colorOrder, Config::ledCount);
   
-  uint8_t chipset = Config::getConfig().led.chipset;
-  uint8_t colorOrder = Config::getConfig().led.colorOrder;
-  uint16_t ledCount = Config::getConfig().led.count;
-  ledStrip.begin(chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, colorOrder, ledCount);
-
+  #ifdef CONFIG_TYPE_WEBCONFIG
+    webServer.begin();
+    ota.begin(Config::getConfig().wifi.hostname);  
+    uint8_t chipset = Config::getConfig().led.chipset;
+    uint8_t colorOrder = Config::getConfig().led.colorOrder;
+    uint16_t ledCount = Config::getConfig().led.count;
+    ledStrip.begin(chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, colorOrder, ledCount);
+  #elif CONFIG_TYPE_STATIC_CONFIG
+    ota.begin(CONFIG_WIFI_HOSTNAME); 
+    ledStrip.begin();
+  #endif
+    
   udpLed.begin();
   udpLed.onUpdateLed(updateLed);
   udpLed.onRefreshLeds(refreshLeds);

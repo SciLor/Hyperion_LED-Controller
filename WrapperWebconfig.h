@@ -1,7 +1,9 @@
 #ifndef WrapperWebconfig_h
 #define WrapperWebconfig_h
-
 #include "BaseHeader.h"
+
+#ifdef CONFIG_TYPE_WEBCONFIG
+
 #include <ESP8266WebServer.h>
 #include <FastLED.h>
 #include <LinkedList.h>
@@ -85,4 +87,5 @@ class WrapperWebconfig {
     ESP8266WebServer _server = ESP8266WebServer(80);
 };
 
+#endif
 #endif

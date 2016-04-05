@@ -1,5 +1,6 @@
 #include "WrapperWebconfig.h"
 
+#ifdef CONFIG_TYPE_WEBCONFIG
 void WrapperWebconfig::begin() {
   _server.onNotFound([&](){ WrapperWebconfig::handleNotFound(); });
   _server.on("/", [&](){ WrapperWebconfig::handleRoot(); });
@@ -436,4 +437,4 @@ void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Static", "Static color", active == STATIC_COLOR, STATIC_COLOR));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Off", "Off", active == OFF, OFF));
 }
-
+#endif

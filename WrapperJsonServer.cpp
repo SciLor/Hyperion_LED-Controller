@@ -1,5 +1,8 @@
 #include "WrapperJsonServer.h"
 
+WrapperJsonServer::WrapperJsonServer()
+  : _tcpServer(0) {}
+
 WrapperJsonServer::WrapperJsonServer(uint16_t ledCount, uint16_t tcpPort)
   : _tcpServer(tcpPort) {
   _ledCount = ledCount;
@@ -16,8 +19,9 @@ void WrapperJsonServer::handle(void) {
     handleConnection(false);
   } else {
     _tcpClient = _tcpServer.available();
-    if (_tcpClient)
+    if (_tcpClient) {
       handleConnection(true);
+    }
   }
 }
 
@@ -25,9 +29,7 @@ void WrapperJsonServer::handleConnection(boolean newClient) {
   if (_tcpClient.connected()) {
     if (newClient) {
       Log.info("TCP-Client connected");
-      _tcpClient.println();
     }
-    
     while (_tcpClient.available()) {
       readData();
     }
@@ -45,7 +47,8 @@ void WrapperJsonServer::readData(void) {
   if (root.success()) {
     String command = root["command"].asString();
     if (command.equals("serverinfo")) {
-      Log.info("serverinfo");
+      Log.info("serverinfo");     
+      //_tcpClient.println("{\"success\":true}");
       _tcpClient.println("{\"info\":{\"effects\":[{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"}],\"hostname\":\"ESP8266\",\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},\"success\":true}");
     } else if (command.equals("color")) {
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
@@ -56,7 +59,6 @@ void WrapperJsonServer::readData(void) {
     } else {
       _tcpClient.println("{\"success\":false}");
     }
-    _tcpClient.flush();
   } else {
     Log.error("JSON not parsed");
   }

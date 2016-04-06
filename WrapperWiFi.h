@@ -7,6 +7,7 @@
 
 class WrapperWiFi {
   public:
+    WrapperWiFi() {};
     WrapperWiFi(const char* ssid, const char* password);
     void begin(void);
   private:

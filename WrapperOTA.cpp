@@ -1,18 +1,14 @@
 #include "WrapperOTA.h"
 
-WrapperOTA::WrapperOTA(const char* hostname) {  
-  _hostname = hostname;
-}
-
-void WrapperOTA::begin(void) {
-  Log.debug("WrapperOTA(hostname=\"%s\")", _hostname);
+void WrapperOTA::begin(const char* hostname) {
   Log.info("Prepare OTA");
+  Log.debug("WrapperOTA(hostname=\"%s\")", hostname);
 
   // Port defaults to 8266
   ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname(_hostname);
+  ArduinoOTA.setHostname(hostname);
 
   // No authentication by default
   // ArduinoOTA.setPassword((const char *)"schnulli");

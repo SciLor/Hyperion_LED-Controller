@@ -6,6 +6,7 @@
 
 class WrapperUdpLed {
   public:
+    WrapperUdpLed() {};
     WrapperUdpLed(uint16_t ledCount, uint16_t udpPort);
     
     void

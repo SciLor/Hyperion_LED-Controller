@@ -1,0 +1,30 @@
+/*------------------------------------------------*/
+/*Configuration type*/
+
+//#define CONFIG_TYPE_WEBCONFIG 1
+#define CONFIG_TYPE_STATIC_CONFIG 1
+
+/*------------------------------------------------*/
+/*Logging level*/
+
+//#define LOGLEVEL LOG_LEVEL_INFOS
+#define LOGLEVEL LOG_LEVEL_DEBUG
+//#define LOGLEVEL LOG_LEVEL_VERBOSE
+
+/*------------------------------------------------*/
+/*Main configuration*/
+
+#define CONFIG_WIFI_SSID "ssid"
+#define CONFIG_WIFI_PASSWORD "password"
+#define CONFIG_WIFI_HOSTNAME "ESP8266"
+
+#define CONFIG_LED_SPI_CHIPSET WS2801 //Comment out for clockless
+//#define CONFIG_LED_CLOCKLESS_CHIPSET WS2812B
+#define CONFIG_LED_DATAPIN D1
+#define CONFIG_LED_CLOCKPIN D2 //Comment out for clockless
+
+#define CONFIG_LED_COLOR_ORDER RGB
+#define CONFIG_LED_COUNT 50
+
+#define CONFIG_PORT_UDP_LED 19446
+#define CONFIG_PORT_JSON_SERVER 19444

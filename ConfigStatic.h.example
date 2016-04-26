@@ -12,19 +12,36 @@
 //#define LOGLEVEL LOG_LEVEL_VERBOSE
 
 /*------------------------------------------------*/
+/*Hardware library support*/
+#define HW_FASTLED 1
+//#define HW_NEOPIXEL 1
+
+/*------------------------------------------------*/
 /*Main configuration*/
 
 #define CONFIG_WIFI_SSID "ssid"
 #define CONFIG_WIFI_PASSWORD "password"
 #define CONFIG_WIFI_HOSTNAME "ESP8266"
 
-#define CONFIG_LED_SPI_CHIPSET WS2801 //Comment out for clockless
-//#define CONFIG_LED_CLOCKLESS_CHIPSET WS2812B
-#define CONFIG_LED_DATAPIN D1
-#define CONFIG_LED_CLOCKPIN D2 //Comment out for clockless
+#ifdef HW_FASTLED
+  #define CONFIG_LED_CLOCKLESS_CHIPSET WS2812B
+//  #define CONFIG_LED_SPI_CHIPSET WS2801 //Comment out for clockless
+//  #define CONFIG_LED_CLOCKPIN D2 //Comment out for clockless
+  #define CONFIG_LED_COLOR_ORDER GRB
+  #define FASTLED_ESP8266_RAW_PIN_ORDER 1
+#elif HW_NEOPIXEL
+  #define CONFIG_NEO_METHOD   NeoEsp8266Uart800KbpsMethod   //one in NeoEsp8266DMA800KbpsMethod, NeoEsp8266Uart800KbpsMethod, NeoEsp8266BitBang800KbpsMethod
+  #define CONFIG_NEO_FEATURE  NeoGrbFeature					//one in NeoGrbFeature, NeoGrbwFeature, NeoRgbFeature, NeoRgbwFeature, NeoBrgFeature, NeoRbgFeature
+#endif
 
-#define CONFIG_LED_COLOR_ORDER RGB
+#define CONFIG_LED_DATAPIN 2  // ignored for NeoEsp8266Uart800KbpsMethod (Auto-Pin 2) and NeoEsp8266DMA800KbpsMethod (Auto-Pin 3)
 #define CONFIG_LED_COUNT 50
+
+#ifdef HW_FASTLED
+  #define CONFIG_MAX_COLOR 255
+#elif HW_NEOPIXEL
+  #define CONFIG_MAX_COLOR 127
+#endif
 
 #define CONFIG_PORT_UDP_LED 19446
 #define CONFIG_PORT_JSON_SERVER 19444

@@ -17,7 +17,7 @@
   #include "WrapperWebconfig.h"
 #endif
 
-#define LED D0 // LED in NodeMCU at pin GPIO16 (D0).
+#define LED 0 // LED in NodeMCU at pin GPIO16 (D0).
 int ledState = LOW;
 
 LoggerInit loggerInit;
@@ -88,7 +88,11 @@ void loop(void) {
 
 void updateLed(int id, byte r, byte g, byte b) {
   Log.verbose("LED %i, r=%i, g=%i, b=%i", id + 1, r, g, b);
-  ledStrip.leds[id].setRGB(r, g, b);
+  #ifdef HW_FASTLED
+    ledStrip.leds[id].setRGB(r, g, b);
+  #elif HW_NEOPIXEL
+    ledStrip.setPixel( id, r, g, b );
+  #endif
 }
 void refreshLeds(void) {
   Log.debug("refresh LEDs");

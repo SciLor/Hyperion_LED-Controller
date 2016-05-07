@@ -109,64 +109,119 @@
   }
   
 #elif CONFIG_TYPE_STATIC_CONFIG
-  void WrapperFastLed::begin() {
-    #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
-      Log.debug("Chipset=%s, dataPin=%i, clockPin=%s, colorOrder=%i, ledCount=%i", "Clockless", CONFIG_LED_DATAPIN, "NONE", CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
-    #else
-      Log.debug("Chipset=%i, dataPin=%i, clockPin=%i, colorOrder=%i, ledCount=%i", CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
-    #endif
-    
+  void WrapperFastLed::begin() {    
     _ledCount = CONFIG_LED_COUNT;
-    leds = new CRGB[_ledCount];
+
+    #ifdef HW_FASTLED
+      #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
+        Log.debug("Chipset=%s, dataPin=%i, clockPin=%s, colorOrder=%i, ledCount=%i", "Clockless", CONFIG_LED_DATAPIN, "NONE", CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
+      #else
+        Log.debug("Chipset=%i, dataPin=%i, clockPin=%i, colorOrder=%i, ledCount=%i", CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
+      #endif
     
-    #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
-      FastLED.addLeds<CONFIG_LED_CLOCKLESS_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_COLOR_ORDER>(leds, _ledCount);
-    #else
-      FastLED.addLeds<CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER>(leds, _ledCount);
+      leds = new CRGB[_ledCount];
+    
+      #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
+        FastLED.addLeds<CONFIG_LED_CLOCKLESS_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_COLOR_ORDER>(leds, _ledCount);
+      #else
+        FastLED.addLeds<CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER>(leds, _ledCount);
+      #endif
+
+    #elif HW_NEOPIXEL
+      Log.debug("Chipset=%s, Method=%s, dataPin=%i, Feature=%s, ledCount=%i", "NEOPixelBus", "CONFIG_NEO_METHOD", CONFIG_LED_DATAPIN, "CONFIG_NEO_FEATURE", CONFIG_LED_COUNT);
+      strip = new MyPixelBus( _ledCount, CONFIG_LED_DATAPIN );
+      strip->Begin();  
     #endif
   }
 #endif
 
 void WrapperFastLed::show(void) {
-  FastLED.show();
+  #ifdef HW_FASTLED
+    FastLED.show();
+  #elif HW_NEOPIXEL
+    strip->Show();
+  #endif
 }
 
 void WrapperFastLed::clear(void) {
-  FastLED.clear();
+  #ifdef HW_FASTLED
+    FastLED.clear();
+  #elif HW_NEOPIXEL
+    strip->ClearTo( RgbColor(0) );
+  #endif
 }
 
+#ifdef HW_FASTLED
 void WrapperFastLed::fillSolid(CRGB color) {
-  fill_solid(leds, _ledCount, color);
-  show();
+    fill_solid(leds, _ledCount, color);
+    show();
 }
+#elif HW_NEOPIXEL
+void WrapperFastLed::fillSolid(RgbColor color) {
+    for( int i=0; i<_ledCount; i++ ){
+      strip->SetPixelColor( i, color );
+    }
+    show();
+}
+#endif
 
 void WrapperFastLed::fillSolid(byte r, byte g, byte b) {
-  fillSolid(CRGB(r, g, b));
+  #ifdef HW_FASTLED
+    fillSolid(CRGB(r, g, b));
+  #elif HW_NEOPIXEL
+    fillSolid(RgbColor(r, g, b));
+  #endif
 }
 
 void WrapperFastLed::rainbowStep(void) {
-  for (int i=0; i < _ledCount; i++) {
-    leds[i] = wheel((i + _rainbowStepState) % 255);
+  for( int i=0; i<_ledCount; i++ ){
+    #ifdef HW_FASTLED
+      leds[i] = wheel((i + _rainbowStepState) % colorSaturation);
+    #elif HW_NEOPIXEL
+      strip->SetPixelColor( i, wheel((i + _rainbowStepState) % colorSaturation) );
+    #endif
   }  
   show();
   
-  if (_rainbowStepState < 255) {
+  if (_rainbowStepState < colorSaturation) {
     _rainbowStepState++;
   } else {
     _rainbowStepState = 0;
   }
 }
 
+#ifdef HW_FASTLED
 CRGB WrapperFastLed::wheel(byte wheelPos) {
   CRGB color = CRGB();
-  if (wheelPos < 85) {
-   return color.setRGB(wheelPos * 3, 255 - wheelPos * 3, 0);
-  } else if (wheelPos < 170) {
-   wheelPos -= 85;
-   return color.setRGB(255 - wheelPos * 3, 0, wheelPos * 3);
+  if (wheelPos < colorSaturation / 3) {
+   return color.setRGB(wheelPos * 3, colorSaturation - wheelPos * 3, 0);
+  } else if (wheelPos < 2 * colorSaturation / 3) {
+   wheelPos -= colorSaturation / 3;
+   return color.setRGB(colorSaturation - wheelPos * 3, 0, wheelPos * 3);
   } else {
-   wheelPos -= 170; 
-   return color.setRGB(0, wheelPos * 3, 255 - wheelPos * 3);
+   wheelPos -= 2 * colorSaturation / 3; 
+   return color.setRGB(0, wheelPos * 3, colorSaturation - wheelPos * 3);
   }
   return color;
 }
+#elif HW_NEOPIXEL
+RgbColor WrapperFastLed::wheel(byte wheelPos) {
+  if (wheelPos < colorSaturation / 3) {
+   return RgbColor(wheelPos * 3, colorSaturation - wheelPos * 3, 0);
+  } else if (wheelPos < 2 * colorSaturation / 3) {
+   wheelPos -= colorSaturation / 3;
+   return RgbColor(colorSaturation - wheelPos * 3, 0, wheelPos * 3);
+  } else {
+   wheelPos -= 2 * colorSaturation / 3; 
+   return RgbColor(0, wheelPos * 3, colorSaturation - wheelPos * 3);
+  }
+  return RgbColor(0);
+}
+#endif
+
+#ifdef HW_NEOPIXEL
+void WrapperFastLed::setPixel(byte i, byte r, byte g, byte b) {
+  strip->SetPixelColor( i, RgbColor( r/colorFactor, g/colorFactor, b/colorFactor ) );
+  strip->Show();
+}
+#endif

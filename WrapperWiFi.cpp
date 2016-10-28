@@ -3,6 +3,18 @@
 WrapperWiFi::WrapperWiFi(const char* ssid, const char* password) {  
   _ssid = ssid;
   _password = password;
+  byte empty[4] = {0};
+  memcpy(_ip, empty, sizeof(_ip));
+  memcpy(_subnet, empty, sizeof(_subnet));
+  memcpy(_dns, empty, sizeof(_dns));
+}
+
+WrapperWiFi::WrapperWiFi(const char* ssid, const char* password, const byte ip[4], const byte subnet[4], const byte dns[4]) {  
+  _ssid = ssid;
+  _password = password;
+  memcpy(_ip, ip, sizeof(_ip));
+  memcpy(_subnet, subnet, sizeof(_subnet));
+  memcpy(_dns, dns, sizeof(_dns));
 }
 
 void WrapperWiFi::begin(void) {
@@ -11,6 +23,10 @@ void WrapperWiFi::begin(void) {
   Log.info("Connecting to WiFi %s", _ssid);
   
   WiFi.mode(WIFI_STA);
+  if (_ip[0] != 0) {
+    WiFi.config(_ip, _dns, _subnet);
+  }
+  
   WiFi.begin(_ssid, _password);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Log.error("WiFi Connection Failed! Rebooting...");

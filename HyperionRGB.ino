@@ -13,9 +13,7 @@
 #include "WrapperUdpLed.h"
 #include "WrapperJsonServer.h"
 
-#ifdef CONFIG_TYPE_WEBCONFIG
-  #include "WrapperWebconfig.h"
-#endif
+#include "WrapperWebconfig.h"
 
 #define LED D0 // LED in NodeMCU at pin GPIO16 (D0).
 int ledState = LOW;
@@ -30,7 +28,7 @@ WrapperFastLed ledStrip;
 WrapperUdpLed udpLed;
 WrapperJsonServer jsonServer;
 
-#ifdef CONFIG_TYPE_WEBCONFIG
+#ifdef CONFIG_ENABLE_WEBCONFIG
   WrapperWebconfig webServer;
 #endif
 
@@ -38,7 +36,7 @@ Mode activeMode;
 
 ThreadController threadController = ThreadController();
 Thread statusThread = Thread();
-EnhancedThread rainbowThread = EnhancedThread();
+EnhancedThread animationThread = EnhancedThread();
 EnhancedThread resetThread = EnhancedThread();
 
 void statusInfo(void) {
@@ -51,8 +49,15 @@ void statusInfo(void) {
   digitalWrite(LED, ledState);
 }
 
-void rainbowStep() {
-  ledStrip.rainbowStep();
+void animationStep() {
+  switch (activeMode) {
+    case RAINBOW:
+      ledStrip.rainbowStep();
+      break;
+    case FIRE2012:
+      ledStrip.fire2012Step();
+      break;
+  }
 }
 
 void changeMode(Mode newMode) {
@@ -77,7 +82,8 @@ void loop(void) {
   handleEvents();
   switch (activeMode) {
     case RAINBOW:
-      rainbowThread.runIfNeeded();
+    case FIRE2012:
+      animationThread.runIfNeeded();
       break;
     case STATIC_COLOR:
       break;
@@ -104,35 +110,54 @@ void ledColorWipe(byte r, byte g, byte b) {
 }
 void resetMode(void) {
   Log.info("reset Mode");
-  changeMode(RAINBOW);
+  changeMode(CONFIG_LED_STANDARD_MODE);
   resetThread.enabled = false;
+}
+
+void initConfig(void) {
+  #if defined(CONFIG_OVERWRITE_WEBCONFIG) && defined(CONFIG_ENABLE_WEBCONFIG)
+    Config::loadStaticConfig();
+  #endif
+
+  #ifdef CONFIG_ENABLE_WEBCONFIG
+    //Load WiFi Config from EEPROM
+    //TODO Fallback
+    const byte* ip = Config::cfg2ip(Config::getConfig().wifi.ip);
+    const byte* subnet = Config::cfg2ip(Config::getConfig().wifi.subnet);
+    const byte* dns = Config::cfg2ip(Config::getConfig().wifi.dns);
+    
+    wifi = WrapperWiFi(Config::getConfig().wifi.ssid, Config::getConfig().wifi.password, ip, subnet, dns);
+    udpLed = WrapperUdpLed(CONFIG_LED_COUNT, Config::getConfig().ports.udpLed);
+    jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, Config::getConfig().ports.jsonServer);
+    Log.info("CFG=%s", "EEPROM config loaded");
+  #else
+    //Load WiFi Config from ConfigStatic.h
+    #ifdef CONFIG_WIFI_STATIC_IP
+      wifi = WrapperWiFi(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, CONFIG_WIFI_IP, CONFIG_WIFI_SUBNET, CONFIG_WIFI_DNS);
+    #else
+      wifi = WrapperWiFi(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    #endif
+    udpLed = WrapperUdpLed(CONFIG_LED_COUNT, CONFIG_PORT_UDP_LED);
+    jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, CONFIG_PORT_JSON_SERVER);
+    Log.info("CFG=%s", "Static config loaded");
+  #endif
 }
 
 void setup(void) {
   LoggerInit loggerInit = LoggerInit(115200);
-
-  #ifdef CONFIG_TYPE_WEBCONFIG
-    wifi = WrapperWiFi(Config::getConfig().wifi.ssid, Config::getConfig().wifi.password); //TODO Fallback
-    udpLed = WrapperUdpLed(Config::getConfig().led.count, Config::getConfig().ports.udpLed);
-    jsonServer = WrapperJsonServer(Config::getConfig().led.count, Config::getConfig().ports.jsonServer);
-    webServer = WrapperWebconfig();
-  #elif CONFIG_TYPE_STATIC_CONFIG
-    wifi = WrapperWiFi(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
-    udpLed = WrapperUdpLed(CONFIG_LED_COUNT, CONFIG_PORT_UDP_LED);
-    jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, CONFIG_PORT_JSON_SERVER);
-  #endif
   
+  initConfig();
   ota = WrapperOTA();
   ledStrip = WrapperFastLed();
-  
   resetMode();
+  ledStrip.begin();
 
   statusThread.onRun(statusInfo);
   statusThread.setInterval(5000);
   threadController.add(&statusThread);
 
-  rainbowThread.onRun(rainbowStep);
-  rainbowThread.setInterval(500);
+  animationThread.onRun(animationStep);
+  animationThread.setInterval(500);
 
   resetThread.onRun(resetMode);
   resetThread.setInterval(5000);
@@ -140,19 +165,16 @@ void setup(void) {
   threadController.add(&resetThread);
 
   wifi.begin();
-  
-  #ifdef CONFIG_TYPE_WEBCONFIG
+
+  #ifdef CONFIG_ENABLE_WEBCONFIG
+    webServer = WrapperWebconfig();
     webServer.begin();
-    ota.begin(Config::getConfig().wifi.hostname);  
-    uint8_t chipset = Config::getConfig().led.chipset;
-    uint8_t colorOrder = Config::getConfig().led.colorOrder;
-    uint16_t ledCount = Config::getConfig().led.count;
-    ledStrip.begin(chipset, Config::getConfig().led.dataPin, Config::getConfig().led.clockPin, colorOrder, ledCount);
-  #elif CONFIG_TYPE_STATIC_CONFIG
+    ota.begin(Config::getConfig().wifi.hostname);
+  #else
     ota.begin(CONFIG_WIFI_HOSTNAME); 
-    ledStrip.begin();
   #endif
-    
+  
+
   udpLed.begin();
   udpLed.onUpdateLed(updateLed);
   udpLed.onRefreshLeds(refreshLeds);
@@ -162,6 +184,5 @@ void setup(void) {
   jsonServer.onClearCmd(resetMode);
 
   pinMode(LED, OUTPUT);   // LED pin as output.
-
   Log.info("HEAP=%i", ESP.getFreeHeap());
 }

@@ -2,7 +2,7 @@
 #define ConfigStructures_h
 
 #define CONFIG_START_ADDRESS 0
-#define CONFIG_ACTIVE_VERSION 2
+#define CONFIG_ACTIVE_VERSION 3
 
 typedef struct {
   uint8_t a;
@@ -27,14 +27,9 @@ typedef struct {
 } ConfigWifi;
 
 typedef struct {
-  uint8_t chipset;
-  uint8_t colorOrder;
-  uint8_t dataPin;
-  uint8_t clockPin;
-  uint16_t count;
   uint8_t idleMode;
 
-  char spacer[32];
+  char spacer[64];
 } ConfigLed;
 
 typedef struct {

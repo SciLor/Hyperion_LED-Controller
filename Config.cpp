@@ -1,40 +1,94 @@
 #include "Config.h"
 
-//static
+ConfigStruct Config::_cfgStruct;
+boolean Config::_cfgLoaded = false;
 
-#ifdef CONFIG_TYPE_WEBCONFIG
-  ConfigStruct Config::_cfgStruct;
-  boolean Config::_cfgLoaded;
-  
-  void Config::saveConfig(ConfigStruct cfg) {
+void Config::saveConfig(ConfigStruct cfg) {
+  EEPROM.begin(sizeof(ConfigStruct));
+  EEPROM.put(CONFIG_START_ADDRESS, cfg);
+  cfg.version = CONFIG_ACTIVE_VERSION;
+  Log.info("Configuration saved at 0x%x with v%i", CONFIG_START_ADDRESS, cfg.version);
+  //EEPROM.commit(); (done with end())
+  EEPROM.end();
+  _cfgLoaded = false;
+}
+
+void Config::initConfig(void) {
+  if (!_cfgLoaded) {
     EEPROM.begin(sizeof(ConfigStruct));
-    EEPROM.put(CONFIG_START_ADDRESS, cfg);
-    cfg.version = CONFIG_ACTIVE_VERSION;
-    Log.info("Configuration saved at 0x%x with v%i", CONFIG_START_ADDRESS, cfg.version);
-    //EEPROM.commit(); (done with end())
-    EEPROM.end();
-    _cfgLoaded = false;
-  }
-  ConfigStruct Config::getConfig(void) {
-    if (!_cfgLoaded) {
-      EEPROM.begin(sizeof(ConfigStruct));
-      uint8_t version = EEPROM.read(CONFIG_START_ADDRESS);
-      if (version == CONFIG_ACTIVE_VERSION) {
-        EEPROM.get(CONFIG_START_ADDRESS, _cfgStruct);
-        EEPROM.end();
-        Log.info("Configuration read at 0x%x with v%i", CONFIG_START_ADDRESS, version);
-      } else {
-        //init config
-        _cfgStruct.version = CONFIG_ACTIVE_VERSION;
-        strncpy(_cfgStruct.wifi.hostname, "ESP8266", 32);
-        _cfgStruct.ports.jsonServer = 19444;
-        _cfgStruct.ports.udpLed = 19446;
-        EEPROM.end();
-        saveConfig(_cfgStruct);
-        Log.info("Configuration at 0x%x with v%i (v%i expected), new configuration created", CONFIG_START_ADDRESS, version, CONFIG_ACTIVE_VERSION);
-      }
-      _cfgLoaded = true;
+    uint8_t version = EEPROM.read(CONFIG_START_ADDRESS);
+    if (version == CONFIG_ACTIVE_VERSION) {
+      EEPROM.get(CONFIG_START_ADDRESS, _cfgStruct);
+      EEPROM.end();
+      Log.info("Configuration read at 0x%x with v%i", CONFIG_START_ADDRESS, version);
+    } else {
+      //init config
+      _cfgStruct.version = CONFIG_ACTIVE_VERSION;
+      strncpy(_cfgStruct.wifi.hostname, "ESP8266", 32);
+      _cfgStruct.ports.jsonServer = 19444;
+      _cfgStruct.ports.udpLed = 19446;
+      EEPROM.end();
+      saveConfig(_cfgStruct);
+      Log.info("Configuration at 0x%x with v%i (v%i expected), new configuration created", CONFIG_START_ADDRESS, version, CONFIG_ACTIVE_VERSION);
     }
-    return _cfgStruct;
+    _cfgLoaded = true;
   }
-#endif
+}
+
+ConfigStruct Config::getConfig(void) {
+  initConfig();
+  return _cfgStruct;
+}
+
+void Config::loadStaticConfig(void) {
+  Log.info("CFG=%s", "loadStaticConfig initConfig");
+  initConfig();
+  strlcpy(_cfgStruct.wifi.ssid, CONFIG_WIFI_SSID, sizeof(_cfgStruct.wifi.ssid));
+  strlcpy(_cfgStruct.wifi.password, CONFIG_WIFI_PASSWORD, sizeof(_cfgStruct.wifi.password));
+  strlcpy(_cfgStruct.wifi.hostname, CONFIG_WIFI_HOSTNAME, sizeof(_cfgStruct.wifi.hostname));
+
+  #ifdef CONFIG_WIFI_STATIC_IP
+    _cfgStruct.wifi.ip = ip2cfg(CONFIG_WIFI_IP);
+    _cfgStruct.wifi.subnet = ip2cfg(CONFIG_WIFI_SUBNET);
+    _cfgStruct.wifi.dns = ip2cfg(CONFIG_WIFI_DNS);
+  #else
+    _cfgStruct.wifi.ip.a = 0;
+    _cfgStruct.wifi.ip.b = 0;
+    _cfgStruct.wifi.ip.c = 0;
+    _cfgStruct.wifi.ip.d = 0;
+    
+    _cfgStruct.wifi.subnet.a = 0;
+    _cfgStruct.wifi.subnet.b = 0;
+    _cfgStruct.wifi.subnet.c = 0;
+    _cfgStruct.wifi.subnet.d = 0;
+    
+    _cfgStruct.wifi.dns.a = 0;
+    _cfgStruct.wifi.dns.b = 0;
+    _cfgStruct.wifi.dns.c = 0;
+    _cfgStruct.wifi.dns.d = 0;
+  #endif
+  //_cfgStruct.led.idleMode
+
+  _cfgStruct.ports.jsonServer = CONFIG_PORT_JSON_SERVER;
+  _cfgStruct.ports.udpLed = CONFIG_PORT_UDP_LED;
+
+  saveConfig(_cfgStruct);
+  Log.info("CFG=%s", "loadStaticConfig END");
+}
+
+byte* Config::cfg2ip(ConfigIP ipStruct) {
+  Log.verbose("CFG=cfg2ip: %i.%i.%i.%i", ipStruct.a, ipStruct.b, ipStruct.c, ipStruct.d);
+  byte ipByte[] = { ipStruct.a, ipStruct.b, ipStruct.c, ipStruct.d };
+  return ipByte;
+}
+
+ConfigIP Config::ip2cfg(const byte ip[4]) {
+  Log.verbose("CFG=ip2cfg: %i.%i.%i.%i", ip[0], ip[1], ip[2], ip[3]);
+  ConfigIP cfgIp;
+  cfgIp.a = ip[0];
+  cfgIp.b = ip[1];
+  cfgIp.c = ip[2];
+  cfgIp.d = ip[3];
+  return cfgIp;
+}
+

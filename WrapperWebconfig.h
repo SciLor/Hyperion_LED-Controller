@@ -2,8 +2,6 @@
 #define WrapperWebconfig_h
 #include "BaseHeader.h"
 
-#ifdef CONFIG_TYPE_WEBCONFIG
-
 #include <ESP8266WebServer.h>
 #include <FastLED.h>
 #include <LinkedList.h>
@@ -70,22 +68,14 @@ class WrapperWebconfig {
       initHelperVars(void),
       clearHelperVars(void),
       clearLinkedList(LinkedList<SelectEntryBase*>* target),
-      getChipsets(uint8_t active, LinkedList<SelectEntryBase*>* target),
-      getAllPins(uint8_t active, LinkedList<SelectEntryBase*>* target),
-      getRgbOrder(uint8_t active, LinkedList<SelectEntryBase*>* target),
       getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target);
 
     template<typename T>
     T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);
     
-    LinkedList<SelectEntryBase*>* _chipsets;
-    LinkedList<SelectEntryBase*>* _rgbOrder;
-    LinkedList<SelectEntryBase*>* _dataPins;
-    LinkedList<SelectEntryBase*>* _clockPins;
     LinkedList<SelectEntryBase*>* _idleModes;
     
     ESP8266WebServer _server = ESP8266WebServer(80);
 };
 
-#endif
 #endif

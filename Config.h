@@ -6,22 +6,19 @@
 #include <EEPROM.h>
 
 #include "ConfigStatic.h"
-
-#ifdef CONFIG_TYPE_WEBCONFIG
-  #include "ConfigStructures.h"
-#endif
-
-enum Mode { RAINBOW, STATIC_COLOR, AMBILIGHT, OFF };
+#include "ConfigStructures.h"
 
 class Config {
-  #ifdef CONFIG_TYPE_WEBCONFIG
-    public:
-      static ConfigStruct getConfig(void);
-      static void saveConfig(ConfigStruct cfg);
-    private:
-      static ConfigStruct _cfgStruct;
-      static boolean _cfgLoaded;
-  #endif
+  public:
+    static ConfigStruct getConfig(void);
+    static void saveConfig(ConfigStruct cfg);
+    static void loadStaticConfig(void);
+    static byte* cfg2ip(ConfigIP ip);
+    static ConfigIP ip2cfg(const byte ip[4]);
+  private:
+    static void initConfig(void);
+    static ConfigStruct _cfgStruct;
+    static boolean _cfgLoaded;
 };
 
 #endif

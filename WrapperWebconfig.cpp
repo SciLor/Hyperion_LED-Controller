@@ -1,6 +1,5 @@
 #include "WrapperWebconfig.h"
 
-#ifdef CONFIG_TYPE_WEBCONFIG
 void WrapperWebconfig::begin() {
   _server.onNotFound([&](){ WrapperWebconfig::handleNotFound(); });
   _server.on("/", [&](){ WrapperWebconfig::handleRoot(); });
@@ -115,18 +114,6 @@ void WrapperWebconfig::changeConfig(void) {
       cfg.ports.udpLed = argValue.toInt();
       if (cfg.ports.udpLed == 0)
         cfg.ports.udpLed = 19446;
-    } else if (argName == "led-chipset") {
-      cfg.led.chipset = getSelectedEntry<uint8_t>(argValue, _chipsets);
-    } else if (argName == "led-colorOrder") {
-      cfg.led.colorOrder = getSelectedEntry<uint8_t>(argValue, _rgbOrder);
-    } else if (argName == "led-dataPin") {
-      cfg.led.dataPin = getSelectedEntry<uint8_t>(argValue, _dataPins);
-    } else if (argName == "led-clockPin") {
-      cfg.led.clockPin = getSelectedEntry<uint8_t>(argValue, _clockPins);
-    } else if (argName == "led-count") {
-      cfg.led.count = argValue.toInt();
-      if (cfg.led.count == 0)
-        cfg.led.count = 1;
     } else if (argName == "led-idleMode") {
       cfg.led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
     } else if (argName == "saveRestart") {
@@ -273,28 +260,6 @@ String WrapperWebconfig::config(void) {
     groupContent += textTemplate("UDP LED Port", "ports-udp", escape(cfg.ports.udpLed), "19446", 5);
     html += groupTemplate("Ports", groupContent);
     groupContent = "";
-    
-    _chipsets = new LinkedList<SelectEntryBase*>();
-    getChipsets(cfg.led.chipset, _chipsets);
-    groupContent += selectTemplate("LED Chipset", "led-chipset", _chipsets);
-    clearLinkedList(_chipsets);
-
-    _rgbOrder = new LinkedList<SelectEntryBase*>();
-    getRgbOrder(cfg.led.colorOrder, _rgbOrder);
-    groupContent += selectTemplate("LED Color Order", "led-colorOrder", _rgbOrder);
-    clearLinkedList(_rgbOrder);
-
-    _dataPins = new LinkedList<SelectEntryBase*>();
-    getAllPins(cfg.led.dataPin, _dataPins);
-    groupContent += selectTemplate("LED Data Pin", "led-dataPin", _dataPins);
-    clearLinkedList(_dataPins);
-
-    _clockPins = new LinkedList<SelectEntryBase*>();
-    getAllPins(cfg.led.clockPin, _clockPins);
-    groupContent += selectTemplate("LED Clock Pin", "led-clockPin", _clockPins);
-    clearLinkedList(_clockPins);
-    
-    groupContent += textTemplate("LED Count", "led-count", escape(cfg.led.count), "", 5);
 
     _idleModes = new LinkedList<SelectEntryBase*>();
     getIdleModes(cfg.led.idleMode, _idleModes);
@@ -331,24 +296,11 @@ String WrapperWebconfig::config(void) {
 
 void WrapperWebconfig::initHelperVars(void) {
   ConfigStruct cfg = Config::getConfig();
-
-  _chipsets = new LinkedList<SelectEntryBase*>();
-  _rgbOrder = new LinkedList<SelectEntryBase*>();
-  _dataPins = new LinkedList<SelectEntryBase*>();
-  _clockPins = new LinkedList<SelectEntryBase*>();
-  _idleModes = new LinkedList<SelectEntryBase*>();
   
-  getChipsets(cfg.led.chipset, _chipsets);
-  getRgbOrder(cfg.led.colorOrder, _rgbOrder);
-  getAllPins(cfg.led.dataPin, _dataPins);
-  getAllPins(cfg.led.clockPin, _clockPins);
+  _idleModes = new LinkedList<SelectEntryBase*>();
   getIdleModes(cfg.led.idleMode, _idleModes);
 }
 void WrapperWebconfig::clearHelperVars(void) {
-  clearLinkedList(_chipsets);
-  clearLinkedList(_rgbOrder);
-  clearLinkedList(_dataPins);
-  clearLinkedList(_clockPins);
   clearLinkedList(_idleModes);
 }
 void WrapperWebconfig::clearLinkedList(LinkedList<SelectEntryBase*>* target) {
@@ -378,63 +330,8 @@ T WrapperWebconfig::getSelectedEntry(String selectedEntryValue, LinkedList<Selec
   return result;
 }
 
-void WrapperWebconfig::getChipsets(uint8_t active, LinkedList<SelectEntryBase*>* target) {
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-LPD8806", "LPD8806", active == SPI_LPD8806, SPI_LPD8806));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2801", "WS2801", active == SPI_WS2801, SPI_WS2801));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-WS2803", "WS2803", active == SPI_WS2803, SPI_WS2803));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-SM16716", "SM16716", active == SPI_SM16716, SPI_SM16716));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-P9813", "P9813", active == SPI_P9813, SPI_P9813));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-APA102", "APA102", active == SPI_APA102, SPI_APA102));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("spi-DOTSTAR", "DOTSTAR", active == SPI_DOTSTAR, SPI_DOTSTAR));
-  /*
-  target->add((SelectEntryBase*) new SelectEntry<NEOPIXEL>("clockless-NEOPIXEL","NEOPIXEL", false, NEOPIXEL));
-  target->add((SelectEntryBase*) new SelectEntry<TM1829>("clockless-TM1829","TM1829", false, TM1829));
-  target->add((SelectEntryBase*) new SelectEntry<TM1812>("clockless-TM1812","TM1812", false, TM1812));
-  target->add((SelectEntryBase*) new SelectEntry<TM1809>("clockless-TM1809","TM1809", false, TM1809));
-  target->add((SelectEntryBase*) new SelectEntry<TM1804>("clockless-TM1804","TM1804", false, TM1804));
-  target->add((SelectEntryBase*) new SelectEntry<TM1803>("clockless-TM1803","TM1803", false, TM1803));
-  target->add((SelectEntryBase*) new SelectEntry<UCS1903>("clockless-UCS1903","UCS1903", false, UCS1903));
-  target->add((SelectEntryBase*) new SelectEntry<UCS1903B>("clockless-UCS1903B","UCS1903B", false, UCS1903B));
-  target->add((SelectEntryBase*) new SelectEntry<UCS1904>("clockless-UCS1904","UCS1904", false, UCS1904));
-  target->add((SelectEntryBase*) new SelectEntry<UCS2903>("clockless-UCS2903","UCS2903", false, UCS2903));
-  target->add((SelectEntryBase*) new SelectEntry<WS2812>("clockless-WS2812","WS2812", false, WS2812));
-  target->add((SelectEntryBase*) new SelectEntry<WS2812B>("clockless-WS2812B","WS2812B", false, WS2812B));
-  target->add((SelectEntryBase*) new SelectEntry<SK6812>("clockless-SK6812","SK6812", false, SK6812));
-  target->add((SelectEntryBase*) new SelectEntry<SK6822>("clockless-SK6822","SK6822", false, SK6822));
-  target->add((SelectEntryBase*) new SelectEntry<PL9823>("clockless-PL9823","PL9823", false, PL9823));
-  target->add((SelectEntryBase*) new SelectEntry<WS2811>("clockless-WS2811","WS2811", false, WS2811));
-  target->add((SelectEntryBase*) new SelectEntry<APA104>("clockless-APA104","APA104", false, APA104));
-  target->add((SelectEntryBase*) new SelectEntry<WS2811_400>("clockless-WS2811_400","WS2811_400", false, WS2811_400));
-  target->add((SelectEntryBase*) new SelectEntry<GW6205>("clockless-GW6205","GW6205", false, GW6205));
-  target->add((SelectEntryBase*) new SelectEntry<GW6205_400>("clockless-GW6205_400","GW6205_400", false, GW6205_400));
-  target->add((SelectEntryBase*) new SelectEntry<LPD1886>("clockless-LPD1886","LPD1886", false, LPD1886));*/
-}
-
-void WrapperWebconfig::getAllPins(uint8_t active, LinkedList<SelectEntryBase*>* target) {
-  //target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D0", "D0 (LED)", active == D0, D0));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D1", "D1", active == D1, D1));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D2", "D2", active == D2, D2));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D3", "D3", active == D3, D3));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D4", "D4", active == D4, D4));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D5", "D5", active == D5, D5));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D6", "D6", active == D6, D6));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D7", "D7", active == D7, D7));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D8", "D8", active == D8, D8));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D9", "D9 (RX)", active == D9, D9));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("D10", "D10 (TX)", active == D10, D10));
-}
-
-void WrapperWebconfig::getRgbOrder(uint8_t active, LinkedList<SelectEntryBase*>* target) {
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("RGB", "RGB", active == RGB, RGB));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("RBG", "RBG", active == RBG, RBG));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("GBR", "GBR", active == GBR, GBR));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("GRB", "GRB", active == GRB, GRB));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("BRG", "BRG", active == BRG, BRG));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("BGR", "BGR", active == BGR, BGR));
-}
 void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target) {
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Rainbow", "Rainbow", active == RAINBOW, RAINBOW));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Static", "Static color", active == STATIC_COLOR, STATIC_COLOR));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Off", "Off", active == OFF, OFF));
 }
-#endif

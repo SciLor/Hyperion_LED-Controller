@@ -43,18 +43,27 @@ void WrapperJsonServer::readData(void) {
   String data = _tcpClient.readStringUntil('\n');
   Log.debug("Received data: %s", data.c_str());
   StaticJsonBuffer<TCP_BUFFER> jsonBuffer;
-  JsonObject& root = jsonBuffer.parseObject(data);
+  JsonObject& root = jsonBuffer.parseObject(data.c_str());
   if (root.success()) {
     String command = root["command"].asString();
     if (command.equals("serverinfo")) {
       Log.info("serverinfo");     
       //_tcpClient.println("{\"success\":true}");
-      _tcpClient.println("{\"info\":{\"effects\":[{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"}],\"hostname\":\"ESP8266\",\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},\"success\":true}");
+      //enum Mode { RAINBOW, STATIC_COLOR, AMBILIGHT, FIRE2012, OFF };
+      _tcpClient.println("{\"info\":{\"effects\":["
+          "{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
+          "{\"args\":{\"speed\":1.0},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
+        "],\"hostname\":\"ESP8266\",\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},\"success\":true}");
     } else if (command.equals("color")) {
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("clear")) {
       clearCmd();
+      _tcpClient.println("{\"success\":true}");
+    } else if (command.equals("effect")) {
+      //{"command":"effect","effect":{"name":"Rainbow mood","args":{"speed":1}},"priority":50}
+      String effect = root["effect"]["name"].asString();
+      int speed = root["effect"]["speed"];
       _tcpClient.println("{\"success\":true}");
     } else {
       _tcpClient.println("{\"success\":false}");

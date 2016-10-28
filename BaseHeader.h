@@ -12,4 +12,7 @@
     typeof (Y) y_ = (Y);          \
     (x_ < y_) ? x_ : y_; })*/
 
+enum Mode { RAINBOW, STATIC_COLOR, AMBILIGHT, FIRE2012, OFF };
+
 #endif
+

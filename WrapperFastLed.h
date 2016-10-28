@@ -7,27 +7,21 @@
 class WrapperFastLed {
   public:
     void
-      #ifdef CONFIG_TYPE_WEBCONFIG
-        begin(uint8_t chipset, uint8_t dataPin, uint8_t clockPin, uint8_t colorOrder, uint16_t ledCount),
-      #elif CONFIG_TYPE_STATIC_CONFIG
-        begin(),
-      #endif
+      begin(),
       show(void),
       clear(void),
       fillSolid(CRGB color),
       fillSolid(byte r, byte g, byte b),
-      rainbowStep(void);
+      rainbowStep(void),
+      fire2012Step(void);
 
     CRGB* leds;
       
-  private: 
-   #ifdef CONFIG_TYPE_WEBCONFIG
-    void 
-        addLeds(uint8_t chipset, uint8_t dataPin, uint8_t clockPin, uint8_t colorOrder, uint16_t ledCount);
-   #endif
-      
+  private:       
     CRGB wheel(byte wheelPos);
     byte _rainbowStepState;
+    boolean _fire2012Direction;
+    byte* _fire2012Heat;
     int _ledCount;
 };
 

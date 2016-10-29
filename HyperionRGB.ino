@@ -158,8 +158,6 @@ void setup(void) {
   initConfig();
   ota = WrapperOTA();
   ledStrip = WrapperFastLed();
-  resetMode();
-  ledStrip.begin();
 
   statusThread.onRun(statusInfo);
   statusThread.setInterval(5000);
@@ -172,6 +170,11 @@ void setup(void) {
   resetThread.setInterval(5000);
   resetThread.enabled = false;
   threadController.add(&resetThread);
+
+  
+  ledStrip.begin();
+  resetMode();
+  animationStep();
 
   wifi.begin();
 

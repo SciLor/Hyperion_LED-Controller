@@ -2,6 +2,11 @@
 #define WrapperFastLed_h
 
 #include "BaseHeader.h"
+
+#define FASTLED_ESP8266_RAW_PIN_ORDER
+//#define FASTLED_ESP8266_NODEMCU_PIN_ORDER
+//#define FASTLED_ESP8266_D1_PIN_ORDER
+
 #include <FastLED.h>
 
 class WrapperFastLed {

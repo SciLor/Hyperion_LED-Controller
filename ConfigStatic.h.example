@@ -9,9 +9,9 @@
 /*------------------------------------------------*/
 /*Logging level*/
 
-//#define LOGLEVEL LOG_LEVEL_INFOS
+#define LOGLEVEL LOG_LEVEL_INFOS
 //#define LOGLEVEL LOG_LEVEL_DEBUG
-#define LOGLEVEL LOG_LEVEL_VERBOSE
+//#define LOGLEVEL LOG_LEVEL_VERBOSE
 
 /*------------------------------------------------*/
 /*Main static configuration*/
@@ -26,6 +26,7 @@
 #define CONFIG_LED_COLOR_ORDER RGB
 #define CONFIG_LED_COUNT 50
 
+//OFF, RAINBOW, FIRE2012
 #define CONFIG_LED_STANDARD_MODE FIRE2012
 
 /*------------------------------------------------*/

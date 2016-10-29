@@ -61,10 +61,10 @@ void animationStep() {
 }
 
 void changeMode(Mode newMode) {
-  activeMode = newMode;
-}
-void modeFallback(void) {
-  changeMode(RAINBOW);
+  if (newMode != activeMode) {
+    Log.info("Mode changed to %i", newMode);
+    activeMode = newMode;
+  }
 }
 
 void handleEvents(void) {
@@ -109,7 +109,7 @@ void ledColorWipe(byte r, byte g, byte b) {
   changeMode(STATIC_COLOR);
 }
 void resetMode(void) {
-  Log.info("reset Mode");
+  Log.info("Reset Mode");
   changeMode(CONFIG_LED_STANDARD_MODE);
   resetThread.enabled = false;
 }
@@ -182,6 +182,7 @@ void setup(void) {
   jsonServer.begin();
   jsonServer.onLedColorWipe(ledColorWipe);
   jsonServer.onClearCmd(resetMode);
+  jsonServer.onEffectChange(changeMode);
 
   pinMode(LED, OUTPUT);   // LED pin as output.
   Log.info("HEAP=%i", ESP.getFreeHeap());

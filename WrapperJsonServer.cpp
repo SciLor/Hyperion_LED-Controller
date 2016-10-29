@@ -48,8 +48,6 @@ void WrapperJsonServer::readData(void) {
     String command = root["command"].asString();
     if (command.equals("serverinfo")) {
       Log.info("serverinfo");     
-      //_tcpClient.println("{\"success\":true}");
-      //enum Mode { RAINBOW, STATIC_COLOR, AMBILIGHT, FIRE2012, OFF };
       _tcpClient.println("{\"info\":{\"effects\":["
           "{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
           "{\"args\":{\"speed\":1.0},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
@@ -57,13 +55,18 @@ void WrapperJsonServer::readData(void) {
     } else if (command.equals("color")) {
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
       _tcpClient.println("{\"success\":true}");
-    } else if (command.equals("clear")) {
+    } else if (command.equals("clear") || command.equals("clearall")) {
       clearCmd();
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
-      //{"command":"effect","effect":{"name":"Rainbow mood","args":{"speed":1}},"priority":50}
       String effect = root["effect"]["name"].asString();
       int speed = root["effect"]["speed"];
+      
+      if (effect.equals("Rainbow mood")) {
+        effectChange(RAINBOW);
+      } else if (effect.equals("Fire2012")) {
+        effectChange(FIRE2012);
+      }
       _tcpClient.println("{\"success\":true}");
     } else {
       _tcpClient.println("{\"success\":false}");
@@ -88,6 +91,15 @@ void WrapperJsonServer::onClearCmd(void(* function) (void)) {
 void WrapperJsonServer::clearCmd(void) {
   if (clearCmdPointer) {
     clearCmdPointer();
+  }
+}
+
+void WrapperJsonServer::onEffectChange(void(* function) (Mode)) {
+  effectChangePointer = function;
+}
+void WrapperJsonServer::effectChange(Mode effect) {
+  if (effectChangePointer) {
+    effectChangePointer(effect);
   }
 }
 

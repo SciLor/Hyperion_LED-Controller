@@ -3,7 +3,7 @@
 #include "BaseHeader.h"
 
 #include <ESP8266WebServer.h>
-#include <FastLED.h>
+#include "WrapperFastLed.h"
 #include <LinkedList.h>
 
 class SelectEntryBase {

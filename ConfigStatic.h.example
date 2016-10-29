@@ -14,6 +14,7 @@
 #define LOGLEVEL LOG_LEVEL_VERBOSE
 
 /*------------------------------------------------*/
+<<<<<<< HEAD
 /*Main static configuration*/
 //This cannot be changed via web inteface
 
@@ -26,6 +27,7 @@
 #define CONFIG_LED_COLOR_ORDER RGB
 #define CONFIG_LED_COUNT 50
 
+//OFF, RAINBOW, FIRE2012
 #define CONFIG_LED_STANDARD_MODE FIRE2012
 
 /*------------------------------------------------*/

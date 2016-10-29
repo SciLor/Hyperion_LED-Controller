@@ -9,12 +9,11 @@
 /*------------------------------------------------*/
 /*Logging level*/
 
-//#define LOGLEVEL LOG_LEVEL_INFOS
+#define LOGLEVEL LOG_LEVEL_INFOS
 //#define LOGLEVEL LOG_LEVEL_DEBUG
-#define LOGLEVEL LOG_LEVEL_VERBOSE
+//#define LOGLEVEL LOG_LEVEL_VERBOSE
 
 /*------------------------------------------------*/
-<<<<<<< HEAD
 /*Main static configuration*/
 //This cannot be changed via web inteface
 

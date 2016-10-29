@@ -64,6 +64,15 @@ void changeMode(Mode newMode) {
   if (newMode != activeMode) {
     Log.info("Mode changed to %i", newMode);
     activeMode = newMode;
+
+    switch (activeMode) {
+      case RAINBOW:
+        animationThread.setInterval(500);
+        break;
+      case FIRE2012:
+        animationThread.setInterval(16);
+        break;
+    }
   }
 }
 

@@ -48,8 +48,6 @@ void WrapperJsonServer::readData(void) {
     String command = root["command"].asString();
     if (command.equals("serverinfo")) {
       Log.info("serverinfo");     
-      //_tcpClient.println("{\"success\":true}");
-      //enum Mode { RAINBOW, STATIC_COLOR, AMBILIGHT, FIRE2012, OFF };
       _tcpClient.println("{\"info\":{\"effects\":["
           "{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
           "{\"args\":{\"speed\":1.0},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
@@ -61,7 +59,6 @@ void WrapperJsonServer::readData(void) {
       clearCmd();
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
-      //{"command":"effect","effect":{"name":"Rainbow mood","args":{"speed":1}},"priority":50}
       String effect = root["effect"]["name"].asString();
       int speed = root["effect"]["speed"];
       

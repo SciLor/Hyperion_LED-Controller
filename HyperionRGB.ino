@@ -63,9 +63,6 @@ void animationStep() {
 void changeMode(Mode newMode) {
   activeMode = newMode;
 }
-void modeFallback(void) {
-  changeMode(RAINBOW);
-}
 
 void handleEvents(void) {
   ota.handle();

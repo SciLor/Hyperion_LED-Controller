@@ -64,6 +64,12 @@ void WrapperJsonServer::readData(void) {
       //{"command":"effect","effect":{"name":"Rainbow mood","args":{"speed":1}},"priority":50}
       String effect = root["effect"]["name"].asString();
       int speed = root["effect"]["speed"];
+      
+      if (effect.equals("Rainbow mood")) {
+        effectChange(RAINBOW);
+      } else if (effect.equals("Fire2012")) {
+        effectChange(FIRE2012);
+      }
       _tcpClient.println("{\"success\":true}");
     } else {
       _tcpClient.println("{\"success\":false}");
@@ -88,6 +94,15 @@ void WrapperJsonServer::onClearCmd(void(* function) (void)) {
 void WrapperJsonServer::clearCmd(void) {
   if (clearCmdPointer) {
     clearCmdPointer();
+  }
+}
+
+void WrapperJsonServer::onEffectChange(void(* function) (Mode)) {
+  effectChangePointer = function;
+}
+void WrapperJsonServer::effectChange(Mode effect) {
+  if (effectChangePointer) {
+    effectChangePointer(effect);
   }
 }
 

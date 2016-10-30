@@ -26,11 +26,13 @@ void WrapperUdpLed::handle(void) {
     Log.debug("UDP-Packet received, length: %i", bytes);
     if (bytes == _bufferSize) {
       _udp.readBytes(_udpBuffer, _bufferSize);
-      Log.debug("Contents: %s", _udpBuffer);
+      Log.verbose("Contents: %s", _udpBuffer);
       for (int i=0; i<_ledCount; i++) {
         updateLed(i, _udpBuffer[i*3+0], _udpBuffer[i*3+1], _udpBuffer[i*3+2]);
       }
       refreshLeds();
+    } else {
+      Log.debug("UDP-Packet size expected=%i, actual=%i", _bufferSize, bytes);
     }
   }
 }

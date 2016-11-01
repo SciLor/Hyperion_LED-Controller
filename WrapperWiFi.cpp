@@ -31,7 +31,10 @@ void WrapperWiFi::begin(void) {
   
   WiFi.mode(WIFI_STA);
   if (_ip[0] != 0) {
+    Log.info("Using static ip");
     WiFi.config(_ip, _dns, _subnet);
+  } else {
+    Log.info("Using dynamic ip");
   }
   
   WiFi.begin(_ssid, _password);

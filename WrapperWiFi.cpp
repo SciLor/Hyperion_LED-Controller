@@ -12,9 +12,11 @@ WrapperWiFi::WrapperWiFi(const char* ssid, const char* password) {
 WrapperWiFi::WrapperWiFi(const char* ssid, const char* password, const byte ip[4], const byte subnet[4], const byte dns[4]) {  
   _ssid = ssid;
   _password = password;
-  memcpy(_ip, ip, sizeof(_ip));
-  memcpy(_subnet, subnet, sizeof(_subnet));
-  memcpy(_dns, dns, sizeof(_dns));
+  if (ip[0] != 0) {
+    memcpy(_ip, ip, sizeof(_ip));
+    memcpy(_subnet, subnet, sizeof(_subnet));
+    memcpy(_dns, dns, sizeof(_dns));
+  }
 }
 
 void WrapperWiFi::begin(void) {

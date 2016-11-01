@@ -3,11 +3,11 @@
 ConfigStruct Config::_cfgStruct;
 boolean Config::_cfgLoaded = false;
 
-void Config::saveConfig(ConfigStruct cfg) {
+void Config::saveConfig() {
   EEPROM.begin(sizeof(ConfigStruct));
-  EEPROM.put(CONFIG_START_ADDRESS, cfg);
-  cfg.version = CONFIG_ACTIVE_VERSION;
-  Log.info("Configuration saved at 0x%x with v%i", CONFIG_START_ADDRESS, cfg.version);
+  EEPROM.put(CONFIG_START_ADDRESS, _cfgStruct);
+  _cfgStruct.version = CONFIG_ACTIVE_VERSION;
+  Log.info("Configuration saved at 0x%x with v%i", CONFIG_START_ADDRESS, _cfgStruct.version);
   //EEPROM.commit(); (done with end())
   EEPROM.end();
   _cfgLoaded = false;
@@ -28,16 +28,16 @@ void Config::initConfig(void) {
       _cfgStruct.ports.jsonServer = 19444;
       _cfgStruct.ports.udpLed = 19446;
       EEPROM.end();
-      saveConfig(_cfgStruct);
+      saveConfig();
       Log.info("Configuration at 0x%x with v%i (v%i expected), new configuration created", CONFIG_START_ADDRESS, version, CONFIG_ACTIVE_VERSION);
     }
     _cfgLoaded = true;
   }
 }
 
-ConfigStruct Config::getConfig(void) {
+ConfigStruct *Config::getConfig(void) {
   initConfig();
-  return _cfgStruct;
+  return &_cfgStruct;
 }
 
 void Config::loadStaticConfig(void) {
@@ -67,13 +67,34 @@ void Config::loadStaticConfig(void) {
     _cfgStruct.wifi.dns.c = 0;
     _cfgStruct.wifi.dns.d = 0;
   #endif
-  //_cfgStruct.led.idleMode
+  _cfgStruct.led.idleMode = CONFIG_LED_STANDARD_MODE;
 
   _cfgStruct.ports.jsonServer = CONFIG_PORT_JSON_SERVER;
   _cfgStruct.ports.udpLed = CONFIG_PORT_UDP_LED;
 
-  saveConfig(_cfgStruct);
+  saveConfig();
   Log.info("CFG=%s", "loadStaticConfig END");
+}
+
+void Config::logConfig(void) {
+  initConfig();
+  Log.debug("CFG Show Config");
+  
+  Log.debug("+WIFI+");
+  Log.debug("  ssid=%s", _cfgStruct.wifi.ssid);
+  Log.debug("  password=%s", _cfgStruct.wifi.password);
+  Log.debug("  ip=%i.%i.%i.%i", _cfgStruct.wifi.ip.a, _cfgStruct.wifi.ip.b, _cfgStruct.wifi.ip.c, _cfgStruct.wifi.ip.d);
+  Log.debug("  subnet=%i.%i.%i.%i", _cfgStruct.wifi.subnet.a, _cfgStruct.wifi.subnet.b, _cfgStruct.wifi.subnet.c, _cfgStruct.wifi.subnet.d);
+  Log.debug("  dns=%i.%i.%i.%i", _cfgStruct.wifi.dns.a, _cfgStruct.wifi.dns.b, _cfgStruct.wifi.dns.c, _cfgStruct.wifi.dns.d);
+  Log.debug("  hostname=%s", _cfgStruct.wifi.hostname);
+
+  Log.debug("+LED+");
+  Log.debug("  idleMode=%i", _cfgStruct.led.idleMode);
+
+  Log.debug("+PORTS+");
+  Log.debug("  jsonServer=%i", _cfgStruct.ports.jsonServer);
+  Log.debug("  udpLed=%i", _cfgStruct.ports.udpLed);
+  
 }
 
 byte* Config::cfg2ip(ConfigIP ipStruct) {

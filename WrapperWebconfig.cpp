@@ -67,7 +67,7 @@ String WrapperWebconfig::ipToString(ConfigIP ip) {
   return String(buf);
 }
 void WrapperWebconfig::changeConfig(void) {
-  ConfigStruct cfg = Config::getConfig();
+  ConfigStruct *cfg = Config::getConfig();
   boolean restart = false;
   for (uint8_t i=0; i<_server.args(); i++){
     String argName = _server.argName(i);
@@ -75,52 +75,49 @@ void WrapperWebconfig::changeConfig(void) {
 
     Log.debug("Config: \"%s\":\"%s\"", argName.c_str(), argValue.c_str());
     
-    if (argName == "wifi-ssid" && argValue.length() < sizeof(cfg.wifi.ssid)) {
-      strcpy(cfg.wifi.ssid, argValue.c_str());
-    } else if (argName == "wifi-password" && argValue.length() < sizeof(cfg.wifi.password) && argValue.length() > 0) {
+    if (argName == "wifi-ssid" && argValue.length() < sizeof(cfg->wifi.ssid)) {
+      strcpy(cfg->wifi.ssid, argValue.c_str());
+    } else if (argName == "wifi-password" && argValue.length() < sizeof(cfg->wifi.password) && argValue.length() > 0) {
       //only set if empty (Password field is always empty on the webpage)
-      strcpy(cfg.wifi.password, argValue.c_str());
+      strcpy(cfg->wifi.password, argValue.c_str());
     } else if (argName == "wifi-ip") {
       byte ip[4];
       parseBytes(argValue.c_str(), '.', ip, 4, 10);
-      cfg.wifi.ip.a = ip[0];
-      cfg.wifi.ip.b = ip[1];
-      cfg.wifi.ip.c = ip[2];
-      cfg.wifi.ip.d = ip[3];
-      //sscanf(argValue.c_str(), "%d.%d.%d.%d", &cfg.wifi.ip.a, &cfg.wifi.ip.b, &cfg.wifi.ip.c, &cfg.wifi.ip.d);
+      cfg->wifi.ip.a = ip[0];
+      cfg->wifi.ip.b = ip[1];
+      cfg->wifi.ip.c = ip[2];
+      cfg->wifi.ip.d = ip[3];
     } else if (argName == "wifi-subnet") {
       byte ip[4];
       parseBytes(argValue.c_str(), '.', ip, 4, 10);
-      cfg.wifi.subnet.a = ip[0];
-      cfg.wifi.subnet.b = ip[1];
-      cfg.wifi.subnet.c = ip[2];
-      cfg.wifi.subnet.d = ip[3];
-      //sscanf(argValue.c_str(), "%d.%d.%d.%d", &cfg.wifi.subnet.a, &cfg.wifi.subnet.b, &cfg.wifi.subnet.c, &cfg.wifi.subnet.d);
+      cfg->wifi.subnet.a = ip[0];
+      cfg->wifi.subnet.b = ip[1];
+      cfg->wifi.subnet.c = ip[2];
+      cfg->wifi.subnet.d = ip[3];
     } else if (argName == "wifi-dns") {
       byte ip[4];
       parseBytes(argValue.c_str(), '.', ip, 4, 10);
-      cfg.wifi.dns.a = ip[0];
-      cfg.wifi.dns.b = ip[1];
-      cfg.wifi.dns.c = ip[2];
-      cfg.wifi.dns.d = ip[3];
-      //sscanf(argValue.c_str(), "%d.%d.%d.%d", &cfg.wifi.dns.a, &cfg.wifi.dns.b, &cfg.wifi.dns.c, &cfg.wifi.dns.d);
-    } else if (argName == "wifi-hostname" && argValue.length() < sizeof(cfg.wifi.hostname)) {
-      strcpy(cfg.wifi.hostname, argValue.c_str());
+      cfg->wifi.dns.a = ip[0];
+      cfg->wifi.dns.b = ip[1];
+      cfg->wifi.dns.c = ip[2];
+      cfg->wifi.dns.d = ip[3];
+    } else if (argName == "wifi-hostname" && argValue.length() < sizeof(cfg->wifi.hostname)) {
+      strcpy(cfg->wifi.hostname, argValue.c_str());
     } else if (argName == "ports-json") {
-      cfg.ports.jsonServer = argValue.toInt();
-      if (cfg.ports.jsonServer == 0)
-        cfg.ports.jsonServer = 19444;
+      cfg->ports.jsonServer = argValue.toInt();
+      if (cfg->ports.jsonServer == 0)
+        cfg->ports.jsonServer = 19444;
     } else if (argName == "ports-udp") {
-      cfg.ports.udpLed = argValue.toInt();
-      if (cfg.ports.udpLed == 0)
-        cfg.ports.udpLed = 19446;
+      cfg->ports.udpLed = argValue.toInt();
+      if (cfg->ports.udpLed == 0)
+        cfg->ports.udpLed = 19446;
     } else if (argName == "led-idleMode") {
-      cfg.led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
+      cfg->led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
     } else if (argName == "saveRestart") {
       restart = true;
     }
   }
-  Config::saveConfig(cfg);
+  Config::saveConfig();
   if (restart)
     ESP.restart();
 }
@@ -226,9 +223,9 @@ String WrapperWebconfig::config(void) {
   String groupContent = "";
   boolean wifiReady = false;
   
-  ConfigStruct cfg = Config::getConfig();
+  ConfigStruct *cfg = Config::getConfig();
 
-  if (cfg.wifi.ssid[0] != 0) {
+  if (cfg->wifi.ssid[0] != 0) {
     //check Wifi
     wifiReady = true;
   }
@@ -239,30 +236,30 @@ String WrapperWebconfig::config(void) {
   html += "<legend>ESP8266 LED Coniguration</legend>";
 
   groupContent = "";
-  groupContent += textTemplate("WiFi SSID", "wifi-ssid", escape(cfg.wifi.ssid), "", sizeof(cfg.wifi.ssid)-1);
+  groupContent += textTemplate("WiFi SSID", "wifi-ssid", escape(cfg->wifi.ssid), "", sizeof(cfg->wifi.ssid)-1);
 
   String passwordPlaceholder = "no password set";
-  if (cfg.wifi.password[0] != 0)
+  if (cfg->wifi.password[0] != 0)
     passwordPlaceholder = "password saved";
-  groupContent += textTemplate("WiFi Password", "wifi-password", "", passwordPlaceholder, sizeof(cfg.wifi.password)-1);
+  groupContent += textTemplate("WiFi Password", "wifi-password", "", passwordPlaceholder, sizeof(cfg->wifi.password)-1);
 
-  groupContent += textTemplate("IP", "wifi-ip", ipToString(cfg.wifi.ip), "leave empty for dhcp", 15);
-  groupContent += textTemplate("Subnet", "wifi-subnet", ipToString(cfg.wifi.subnet), "255.255.255.0", 15);
-  groupContent += textTemplate("DNS Server", "wifi-dns", ipToString(cfg.wifi.dns), "192.168.1.1", 15);
+  groupContent += textTemplate("IP", "wifi-ip", ipToString(cfg->wifi.ip), "leave empty for dhcp", 15);
+  groupContent += textTemplate("Subnet", "wifi-subnet", ipToString(cfg->wifi.subnet), "255.255.255.0", 15);
+  groupContent += textTemplate("DNS Server", "wifi-dns", ipToString(cfg->wifi.dns), "192.168.1.1", 15);
   
-  groupContent += textTemplate("Module Hostname", "wifi-hostname", escape(cfg.wifi.hostname), "ESP8266", sizeof(cfg.wifi.hostname)-1);
+  groupContent += textTemplate("Module Hostname", "wifi-hostname", escape(cfg->wifi.hostname), "ESP8266", sizeof(cfg->wifi.hostname)-1);
   
   html += groupTemplate("WiFi", groupContent);
   
   if (wifiReady) {
     groupContent = "";
-    groupContent += textTemplate("JSON Server Port", "ports-json", escape(cfg.ports.jsonServer), "19444", 5);
-    groupContent += textTemplate("UDP LED Port", "ports-udp", escape(cfg.ports.udpLed), "19446", 5);
+    groupContent += textTemplate("JSON Server Port", "ports-json", escape(cfg->ports.jsonServer), "19444", 5);
+    groupContent += textTemplate("UDP LED Port", "ports-udp", escape(cfg->ports.udpLed), "19446", 5);
     html += groupTemplate("Ports", groupContent);
     groupContent = "";
 
     _idleModes = new LinkedList<SelectEntryBase*>();
-    getIdleModes(cfg.led.idleMode, _idleModes);
+    getIdleModes(cfg->led.idleMode, _idleModes);
     groupContent += selectTemplate("LED Idle Mode", "led-idleMode", _idleModes);
     clearLinkedList(_idleModes);
     
@@ -295,10 +292,10 @@ String WrapperWebconfig::config(void) {
 }
 
 void WrapperWebconfig::initHelperVars(void) {
-  ConfigStruct cfg = Config::getConfig();
+  ConfigStruct *cfg = Config::getConfig();
   
   _idleModes = new LinkedList<SelectEntryBase*>();
-  getIdleModes(cfg.led.idleMode, _idleModes);
+  getIdleModes(cfg->led.idleMode, _idleModes);
 }
 void WrapperWebconfig::clearHelperVars(void) {
   clearLinkedList(_idleModes);

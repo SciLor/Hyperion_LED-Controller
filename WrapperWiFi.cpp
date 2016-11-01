@@ -16,6 +16,11 @@ WrapperWiFi::WrapperWiFi(const char* ssid, const char* password, const byte ip[4
     memcpy(_ip, ip, sizeof(_ip));
     memcpy(_subnet, subnet, sizeof(_subnet));
     memcpy(_dns, dns, sizeof(_dns));
+  } else {
+    byte empty[4] = {0};
+    memcpy(_ip, empty, sizeof(_ip));
+    memcpy(_subnet, empty, sizeof(_subnet));
+    memcpy(_dns, empty, sizeof(_dns));
   }
 }
 

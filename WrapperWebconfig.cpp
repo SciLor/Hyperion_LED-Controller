@@ -69,6 +69,8 @@ String WrapperWebconfig::ipToString(ConfigIP ip) {
 void WrapperWebconfig::changeConfig(void) {
   ConfigStruct *cfg = Config::getConfig();
   boolean restart = false;
+  boolean loadStatic = false;
+  
   for (uint8_t i=0; i<_server.args(); i++){
     String argName = _server.argName(i);
     String argValue = _server.arg(i);
@@ -115,9 +117,15 @@ void WrapperWebconfig::changeConfig(void) {
       cfg->led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
     } else if (argName == "saveRestart") {
       restart = true;
+    } else if (argName == "loadStatic") {
+      loadStatic = true;
     }
   }
+  if (loadStatic)
+    Config::loadStaticConfig();
+    
   Config::saveConfig();
+  
   if (restart)
     ESP.restart();
 }
@@ -270,23 +278,33 @@ String WrapperWebconfig::config(void) {
     html += "More settings visible, when wifi-connection is ready (internet needed for design)";
     html += "</div>";
   }
+
+  groupContent = "";
+  groupContent += "<div class=\"form-group\">";
+  groupContent +=   "<label class=\"col-md-4 control-label\" for=\"save\"></label>";
+  groupContent +=   "<div class=\"col-md-4\">";
+  groupContent +=     "<button id=\"save\" name=\"save\" class=\"btn btn-primary\">Save Settings</button>";
+  groupContent +=   "</div>";
+  groupContent += "</div>";
   
-  html += "<div class=\"form-group\">";
-  html +=   "<label class=\"col-md-4 control-label\" for=\"save\"></label>";
-  html +=   "<div class=\"col-md-4\">";
-  html +=     "<button id=\"save\" name=\"save\" class=\"btn btn-primary\">Save Settings</button>";
-  html +=   "</div>";
-  html += "</div>";
+  groupContent += "<div class=\"form-group\">";
+  groupContent +=   "<label class=\"col-md-4 control-label\" for=\"saveRestart\"></label>";
+  groupContent +=   "<div class=\"col-md-4\">";
+  groupContent +=     "<button id=\"saveRestart\" name=\"saveRestart\" class=\"btn btn-primary\">Save &amp; restart</button>";
+  groupContent +=   "</div>";
+  groupContent += "</div>";
   
-  html += "<div class=\"form-group\">";
-  html +=   "<label class=\"col-md-4 control-label\" for=\"saveRestart\"></label>";
-  html +=   "<div class=\"col-md-4\">";
-  html +=     "<button id=\"saveRestart\" name=\"saveRestart\" class=\"btn btn-primary\">Save &amp; restart</button>";
-  html +=   "</div>";
-  html += "</div>";
+  groupContent += "<div class=\"form-group\">";
+  groupContent +=   "<label class=\"col-md-4 control-label\" for=\"loadStatic\"></label>";
+  groupContent +=   "<div class=\"col-md-4\">";
+  groupContent +=     "<button id=\"loadStatic\" name=\"loadStatic\" class=\"btn btn-primary\">Load static config</button>";
+  groupContent +=   "</div>";
+  groupContent += "</div>";
   
-  html += "</fieldset>";
-  html += "</form>";
+  groupContent += "</fieldset>";
+  groupContent += "</form>";
+  
+  html += groupTemplate("Buttons", groupContent);
 
   return html;
 }

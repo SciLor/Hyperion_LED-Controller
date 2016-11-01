@@ -13,7 +13,7 @@ class Config {
     static ConfigStruct *getConfig(void);
     static void saveConfig();
     static void loadStaticConfig(void);
-    static byte* cfg2ip(ConfigIP ip);
+    static byte *cfg2ip(ConfigIP ip);
     static ConfigIP ip2cfg(const byte ip[4]);
     static void logConfig(void);
   private:

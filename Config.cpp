@@ -97,9 +97,14 @@ void Config::logConfig(void) {
   
 }
 
-byte* Config::cfg2ip(ConfigIP ipStruct) {
+byte *Config::cfg2ip(ConfigIP ipStruct) {
   Log.verbose("CFG=cfg2ip: %i.%i.%i.%i", ipStruct.a, ipStruct.b, ipStruct.c, ipStruct.d);
-  byte ipByte[] = { ipStruct.a, ipStruct.b, ipStruct.c, ipStruct.d };
+  byte *ipByte = new byte[4];
+  ipByte[0] = ipStruct.a;
+  ipByte[1] = ipStruct.b;
+  ipByte[2] = ipStruct.c;
+  ipByte[3] = ipStruct.d;
+  //byte ipByte[] = { ipStruct.a, ipStruct.b, ipStruct.c, ipStruct.d };
   return ipByte;
 }
 

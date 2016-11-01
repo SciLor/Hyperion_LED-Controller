@@ -112,7 +112,6 @@ void initConfig(void) {
   uint16_t udpLedPort;
 
   #ifdef CONFIG_ENABLE_WEBCONFIG
-    //Load WiFi Config from EEPROM
     //TODO Fallback
     ConfigStruct* cfg = Config::getConfig();
     
@@ -152,7 +151,7 @@ void handleEvents(void) {
   ota.handle();
   udpLed.handle();
   jsonServer.handle();
-  #ifdef CONFIG_TYPE_WEBCONFIG
+  #ifdef CONFIG_ENABLE_WEBCONFIG
     webServer.handle();
   #endif
 

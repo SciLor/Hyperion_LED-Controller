@@ -64,31 +64,15 @@ void changeMode(Mode newMode) {
   if (newMode != activeMode) {
     Log.info("Mode changed to %i", newMode);
     activeMode = newMode;
-  }
-}
 
-void handleEvents(void) {
-  ota.handle();
-  udpLed.handle();
-  jsonServer.handle();
-  #ifdef CONFIG_TYPE_WEBCONFIG
-    webServer.handle();
-  #endif
-
-  threadController.run();
-}
-
-void loop(void) {
-  handleEvents();
-  switch (activeMode) {
-    case RAINBOW:
-    case FIRE2012:
-      animationThread.runIfNeeded();
-      break;
-    case STATIC_COLOR:
-      break;
-    case AMBILIGHT:
-      break;
+    switch (activeMode) {
+      case RAINBOW:
+        animationThread.setInterval(500);
+        break;
+      case FIRE2012:
+        animationThread.setInterval(16);
+        break;
+    }
   }
 }
 
@@ -119,28 +103,59 @@ void initConfig(void) {
     Config::loadStaticConfig();
   #endif
 
+  const char* ssid;
+  const char* password;
+  const byte* ip;
+  const byte* subnet;
+  const byte* dns;
+  uint16_t jsonServerPort;
+  uint16_t udpLedPort;
+
   #ifdef CONFIG_ENABLE_WEBCONFIG
-    //Load WiFi Config from EEPROM
     //TODO Fallback
-    const byte* ip = Config::cfg2ip(Config::getConfig().wifi.ip);
-    const byte* subnet = Config::cfg2ip(Config::getConfig().wifi.subnet);
-    const byte* dns = Config::cfg2ip(Config::getConfig().wifi.dns);
+    ConfigStruct* cfg = Config::getConfig();
     
-    wifi = WrapperWiFi(Config::getConfig().wifi.ssid, Config::getConfig().wifi.password, ip, subnet, dns);
-    udpLed = WrapperUdpLed(CONFIG_LED_COUNT, Config::getConfig().ports.udpLed);
-    jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, Config::getConfig().ports.jsonServer);
+    ssid = cfg->wifi.ssid;
+    password = cfg->wifi.password;
+    ip = Config::cfg2ip(cfg->wifi.ip);
+    subnet = Config::cfg2ip(cfg->wifi.subnet);
+    dns = Config::cfg2ip(cfg->wifi.dns);
+    jsonServerPort = cfg->ports.jsonServer;
+    udpLedPort = cfg->ports.udpLed;
+    
     Log.info("CFG=%s", "EEPROM config loaded");
+    Config::logConfig();
   #else
-    //Load WiFi Config from ConfigStatic.h
+    ssid = CONFIG_WIFI_SSID;
+    password = CONFIG_WIFI_PASSWORD;
     #ifdef CONFIG_WIFI_STATIC_IP
-      wifi = WrapperWiFi(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, CONFIG_WIFI_IP, CONFIG_WIFI_SUBNET, CONFIG_WIFI_DNS);
+      ip = CONFIG_WIFI_IP;
+      subnet = CONFIG_WIFI_SUBNET;
+      dns = CONFIG_WIFI_DNS;
     #else
-      wifi = WrapperWiFi(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+      const byte empty[4] = {0};
+      ip = empty;
     #endif
-    udpLed = WrapperUdpLed(CONFIG_LED_COUNT, CONFIG_PORT_UDP_LED);
-    jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, CONFIG_PORT_JSON_SERVER);
+    jsonServerPort = CONFIG_PORT_JSON_SERVER;
+    udpLedPort = CONFIG_PORT_UDP_LED;
+    
     Log.info("CFG=%s", "Static config loaded");
   #endif
+  
+  wifi = WrapperWiFi(ssid, password, ip, subnet, dns);
+  udpLed = WrapperUdpLed(CONFIG_LED_COUNT, udpLedPort);
+  jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, jsonServerPort);
+}
+
+void handleEvents(void) {
+  ota.handle();
+  udpLed.handle();
+  jsonServer.handle();
+  #ifdef CONFIG_ENABLE_WEBCONFIG
+    webServer.handle();
+  #endif
+
+  threadController.run();
 }
 
 void setup(void) {
@@ -149,8 +164,6 @@ void setup(void) {
   initConfig();
   ota = WrapperOTA();
   ledStrip = WrapperFastLed();
-  resetMode();
-  ledStrip.begin();
 
   statusThread.onRun(statusInfo);
   statusThread.setInterval(5000);
@@ -158,23 +171,26 @@ void setup(void) {
 
   animationThread.onRun(animationStep);
   animationThread.setInterval(500);
-
+  
   resetThread.onRun(resetMode);
   resetThread.setInterval(5000);
   resetThread.enabled = false;
   threadController.add(&resetThread);
+  
+  ledStrip.begin();
+  resetMode();
+  animationStep();
 
   wifi.begin();
 
   #ifdef CONFIG_ENABLE_WEBCONFIG
     webServer = WrapperWebconfig();
     webServer.begin();
-    ota.begin(Config::getConfig().wifi.hostname);
+    ota.begin(Config::getConfig()->wifi.hostname);
   #else
     ota.begin(CONFIG_WIFI_HOSTNAME); 
   #endif
   
-
   udpLed.begin();
   udpLed.onUpdateLed(updateLed);
   udpLed.onRefreshLeds(refreshLeds);
@@ -186,4 +202,18 @@ void setup(void) {
 
   pinMode(LED, OUTPUT);   // LED pin as output.
   Log.info("HEAP=%i", ESP.getFreeHeap());
+}
+
+void loop(void) {
+  handleEvents();
+  switch (activeMode) {
+    case RAINBOW:
+    case FIRE2012:
+      animationThread.runIfNeeded();
+      break;
+    case STATIC_COLOR:
+      break;
+    case AMBILIGHT:
+      break;
+  }
 }

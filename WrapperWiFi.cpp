@@ -12,9 +12,16 @@ WrapperWiFi::WrapperWiFi(const char* ssid, const char* password) {
 WrapperWiFi::WrapperWiFi(const char* ssid, const char* password, const byte ip[4], const byte subnet[4], const byte dns[4]) {  
   _ssid = ssid;
   _password = password;
-  memcpy(_ip, ip, sizeof(_ip));
-  memcpy(_subnet, subnet, sizeof(_subnet));
-  memcpy(_dns, dns, sizeof(_dns));
+  if (ip[0] != 0) {
+    memcpy(_ip, ip, sizeof(_ip));
+    memcpy(_subnet, subnet, sizeof(_subnet));
+    memcpy(_dns, dns, sizeof(_dns));
+  } else {
+    byte empty[4] = {0};
+    memcpy(_ip, empty, sizeof(_ip));
+    memcpy(_subnet, empty, sizeof(_subnet));
+    memcpy(_dns, empty, sizeof(_dns));
+  }
 }
 
 void WrapperWiFi::begin(void) {
@@ -24,7 +31,10 @@ void WrapperWiFi::begin(void) {
   
   WiFi.mode(WIFI_STA);
   if (_ip[0] != 0) {
+    Log.info("Using static ip");
     WiFi.config(_ip, _dns, _subnet);
+  } else {
+    Log.info("Using dynamic ip");
   }
   
   WiFi.begin(_ssid, _password);

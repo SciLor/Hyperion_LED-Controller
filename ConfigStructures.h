@@ -46,14 +46,4 @@ typedef struct {
   ConfigPort ports;
 } ConfigStruct;
 
-enum Chipset {
-  SPI_LPD8806,
-  SPI_WS2801,
-  SPI_WS2803,
-  SPI_SM16716,
-  SPI_P9813,
-  SPI_APA102,
-  SPI_DOTSTAR
-};
-
 #endif

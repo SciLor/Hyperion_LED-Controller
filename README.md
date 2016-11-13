@@ -1,4 +1,4 @@
-# ESP8266_Hyperion_LED-Controller
+# ESP8266 Hyperion LED Controller
 
 This code allows you to use a ESP8266 with a fitting led strip as extension for hyperion (ambilight clone).
 You need to configure hyperion to stream the leds as UDP to the esp.
@@ -6,14 +6,17 @@ You need to configure hyperion to stream the leds as UDP to the esp.
 German Tutorial:
 http://www.forum-raspberrypi.de/Thread-hyperion-tutorial-esp8266-nodemcu-addon-wifi-led-controller-udp
 
-You need following libraries:
+Tested with following following libraries (other versions may work):
+#IDE
+a) Arduino IDE 1.6.12
 
-a) ArduinoThread
+#Board Library
+a) esp8266 2.3.0 http://arduino.esp8266.com/stable/package_esp8266com_index.json - add to board urls
 
-b) ArduinoJson
 
-c) LinkedList
-
-d) FastLED https://github.com/FastLED/FastLED
-
-e) Logging https://github.com/SciLor/Arduino-logging-library
+#Libraries
+a) ArduinoThread 5.7.0
+b) ArduinoJSON 2.1.0
+c) LinkedList 1.2.3
+d) FastLED 3.1.3
+e) Logging https://github.com/SciLor/Arduino-logging-library - install manually

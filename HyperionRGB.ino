@@ -94,7 +94,11 @@ void ledColorWipe(byte r, byte g, byte b) {
 }
 void resetMode(void) {
   Log.info("Reset Mode");
-  changeMode(CONFIG_LED_STANDARD_MODE);
+  #ifdef CONFIG_ENABLE_WEBCONFIG
+    changeMode(static_cast<Mode>(Config::getConfig()->led.idleMode));
+  #else
+    changeMode(CONFIG_LED_STANDARD_MODE);
+  #endif
   resetThread.enabled = false;
 }
 

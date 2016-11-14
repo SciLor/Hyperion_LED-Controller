@@ -13,7 +13,7 @@ WrapperUdpLed::WrapperUdpLed(uint16_t ledCount, uint16_t udpPort) {
 
 void WrapperUdpLed::begin(void) {
   Log.info("Open port %i for UDP...", _udpPort);
-  if (_udp.begin(19446)) {
+  if (_udp.begin(_udpPort)) {
     Log.info("success");
   } else {
     Log.error("no success");

@@ -15,9 +15,9 @@ a) esp8266 2.3.0 http://arduino.esp8266.com/stable/package_esp8266com_index.json
 
 
 #Libraries
-a) ArduinoThread 5.7.0
+a) ArduinoThread 2.1.0
 
-b) ArduinoJSON 2.1.0
+b) ArduinoJSON 5.7.0
 
 c) LinkedList 1.2.3
 

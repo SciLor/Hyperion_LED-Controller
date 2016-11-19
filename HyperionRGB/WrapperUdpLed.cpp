@@ -9,17 +9,28 @@ WrapperUdpLed::WrapperUdpLed(uint16_t ledCount, uint16_t udpPort) {
 
   _udpBuffer = new byte [_bufferSize+1];
   _udpBuffer[_bufferSize] = 0;
+
+  _opened = false;
 }
 
 void WrapperUdpLed::begin(void) {
-  Log.info("Open port %i for UDP...", _udpPort);
-  if (_udp.begin(_udpPort)) {
-    Log.info("success");
-  } else {
-    Log.error("no success");
-  }  
+  if (!_opened) {
+    Log.info("Open port %i for UDP...", _udpPort);
+    if (_udp.begin(_udpPort)) {
+      Log.info("success");
+      _opened = true;
+    } else {
+      Log.error("no success");
+    } 
+  }
 }
-
+void WrapperUdpLed::stop(void) {
+  if (_opened) {
+    Log.info("Close port %i for UDP...", _udpPort);
+    _udp.stop();
+    _opened = false;
+  }
+}
 void WrapperUdpLed::handle(void) {
   int bytes = _udp.parsePacket();
   if (bytes > 0) {

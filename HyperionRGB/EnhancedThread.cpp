@@ -19,4 +19,7 @@ void EnhancedThread::reset(void) {
 void EnhancedThread::setRunOnce(bool runOnce) {
   _runOnce = runOnce;
 }
+unsigned long EnhancedThread::getInterval(void) {
+  return interval;
+}
 

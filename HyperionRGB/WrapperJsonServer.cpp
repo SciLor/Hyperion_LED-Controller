@@ -49,10 +49,15 @@ void WrapperJsonServer::readData(void) {
     if (command.equals("serverinfo")) {
       Log.info("serverinfo");     
       _tcpClient.println("{\"info\":{\"effects\":["
-          "{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
-          "{\"args\":{\"speed\":1.0},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
-        "],\"hostname\":\"ESP8266\",\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},\"success\":true}");
+          "{\"args\":{\"speed\":1.0},\"name\":\"Hyperion UDP\",\"script\":\"hyperion_udp\"},"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
+          "{\"args\":{\"speed\":62.5},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
+        "],"
+        "\"hostname\":\"ESP8266\","
+        "\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},"
+        "\"success\":true}");
     } else if (command.equals("color")) {
+      int duration = root["duration"];
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("clear") || command.equals("clearall")) {
@@ -60,12 +65,16 @@ void WrapperJsonServer::readData(void) {
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
       String effect = root["effect"]["name"].asString();
-      int speed = root["effect"]["speed"];
+      double speed = root["effect"]["speed"];
+      double interval = 1 / speed;
+      int duration = root["duration"];
       
-      if (effect.equals("Rainbow mood")) {
-        effectChange(RAINBOW);
+      if (effect.equals("Hyperion UDP")) {
+        effectChange(HYPERION_UDP);
+      } else if (effect.equals("Rainbow mood")) {
+        effectChange(RAINBOW, interval);
       } else if (effect.equals("Fire2012")) {
-        effectChange(FIRE2012);
+        effectChange(FIRE2012, interval);
       }
       _tcpClient.println("{\"success\":true}");
     } else {
@@ -94,12 +103,12 @@ void WrapperJsonServer::clearCmd(void) {
   }
 }
 
-void WrapperJsonServer::onEffectChange(void(* function) (Mode)) {
+void WrapperJsonServer::onEffectChange(void(* function) (Mode, double)) {
   effectChangePointer = function;
 }
-void WrapperJsonServer::effectChange(Mode effect) {
+void WrapperJsonServer::effectChange(Mode effect, double interval/* = 1.0d*/) {
   if (effectChangePointer) {
-    effectChangePointer(effect);
+    effectChangePointer(effect, interval);
   }
 }
 

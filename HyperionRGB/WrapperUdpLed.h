@@ -11,6 +11,7 @@ class WrapperUdpLed {
     
     void
       begin(void),
+      stop(void),
       handle(void);
 
     void
@@ -23,6 +24,7 @@ class WrapperUdpLed {
     uint16_t _udpPort;
     byte* _udpBuffer;
     uint16_t _bufferSize;
+    boolean _opened;
 
     void 
       updateLed(int id, byte r, byte g, byte b),

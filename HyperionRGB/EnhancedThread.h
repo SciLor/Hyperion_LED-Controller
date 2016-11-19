@@ -11,6 +11,7 @@ class EnhancedThread: public Thread {
       runIfNeeded(void),
       reset(void),
       setRunOnce(bool);
+    unsigned long getInterval(void);
   private:
     bool _runOnce;
 };

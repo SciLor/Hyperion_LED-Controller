@@ -55,13 +55,15 @@ class WrapperWebconfig {
       escape(char* text),
       escape(uint8_t text),
       escape(uint16_t text),
+      escape(uint32_t text),
       ipToString(ConfigIP ip),
       
       htmlTemplate(String title, String content),
       groupTemplate(String title, String body),
-      entryTemplate(String title, String id, String content),
-      textTemplate(String title, String id, String text, String placeholder, int maxLen),
-      selectTemplate(String title, String id, LinkedList<SelectEntryBase*>* entries),
+      entryTemplate(String label, String tooltip, String id, String content),
+      textTemplate(String label, String tooltip, String id, String text, String placeholder, int maxLen),
+      checkboxTemplate(String label, String tooltip, String id, boolean isChecked),
+      selectTemplate(String label, String tooltip, String id, LinkedList<SelectEntryBase*>* entries),
       config(void);
 
     void
@@ -73,7 +75,7 @@ class WrapperWebconfig {
     template<typename T>
     T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);
     
-    LinkedList<SelectEntryBase*>* _idleModes;
+    LinkedList<SelectEntryBase*>* _idleModes;;
     
     ESP8266WebServer _server = ESP8266WebServer(80);
 };

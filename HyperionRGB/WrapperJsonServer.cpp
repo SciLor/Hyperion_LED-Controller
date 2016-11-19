@@ -50,8 +50,8 @@ void WrapperJsonServer::readData(void) {
       Log.info("serverinfo");     
       _tcpClient.println("{\"info\":{\"effects\":["
           "{\"args\":{\"speed\":1.0},\"name\":\"Hyperion UDP\",\"script\":\"hyperion_udp\"},"
-          "{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
-          "{\"args\":{\"speed\":1.0},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
+          "{\"args\":{\"speed\":62.5},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
         "],"
         "\"hostname\":\"ESP8266\","
         "\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},"
@@ -64,14 +64,15 @@ void WrapperJsonServer::readData(void) {
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
       String effect = root["effect"]["script"].asString();
-      int speed = root["effect"]["speed"];
+      double speed = root["effect"]["speed"];
+      double interval = 1 / speed;
       
       if (effect.equals("hyperion_udp")) {
         effectChange(HYPERION_UDP);
       } else if (effect.equals("rainbow")) {
-        effectChange(RAINBOW);
+        effectChange(RAINBOW, interval);
       } else if (effect.equals("fire2012")) {
-        effectChange(FIRE2012);
+        effectChange(FIRE2012, interval);
       }
       _tcpClient.println("{\"success\":true}");
     } else {
@@ -100,12 +101,12 @@ void WrapperJsonServer::clearCmd(void) {
   }
 }
 
-void WrapperJsonServer::onEffectChange(void(* function) (Mode)) {
+void WrapperJsonServer::onEffectChange(void(* function) (Mode, double)) {
   effectChangePointer = function;
 }
-void WrapperJsonServer::effectChange(Mode effect) {
+void WrapperJsonServer::effectChange(Mode effect, double interval/* = 1.0d*/) {
   if (effectChangePointer) {
-    effectChangePointer(effect);
+    effectChangePointer(effect, interval);
   }
 }
 

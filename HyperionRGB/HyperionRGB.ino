@@ -60,17 +60,17 @@ void animationStep() {
   }
 }
 
-void changeMode(Mode newMode) {
+void changeMode(Mode newMode, double interval = 1.0d) {
   if (newMode != activeMode) {
     Log.info("Mode changed to %i", newMode);
     activeMode = newMode;
 
     switch (activeMode) {
       case RAINBOW:
-        animationThread.setInterval(500);
+        animationThread.setInterval(interval);
         break;
       case FIRE2012:
-        animationThread.setInterval(16);
+        animationThread.setInterval(interval);
         break;
     }
   }

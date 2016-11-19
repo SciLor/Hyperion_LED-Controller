@@ -24,6 +24,11 @@
 #define CONFIG_LED_DATAPIN D1
 #define CONFIG_LED_CLOCKPIN D2 //Comment out for clockless
 
+//Pin order, see FastLED doc. NodeMCU should work with FASTLED_ESP8266_RAW_PIN_ORDER
+#define FASTLED_ESP8266_RAW_PIN_ORDER
+//#define FASTLED_ESP8266_NODEMCU_PIN_ORDER
+//#define FASTLED_ESP8266_D1_PIN_ORDER
+
 #define CONFIG_LED_COLOR_ORDER RGB
 #define CONFIG_LED_COUNT 50
 

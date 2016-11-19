@@ -49,22 +49,29 @@ void WrapperJsonServer::readData(void) {
     if (command.equals("serverinfo")) {
       Log.info("serverinfo");     
       _tcpClient.println("{\"info\":{\"effects\":["
+          "{\"args\":{\"speed\":1.0},\"name\":\"Hyperion UDP\",\"script\":\"hyperion_udp\"},"
           "{\"args\":{\"speed\":1.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
           "{\"args\":{\"speed\":1.0},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
-        "],\"hostname\":\"ESP8266\",\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},\"success\":true}");
+        "],"
+        "\"hostname\":\"ESP8266\","
+        "\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},"
+        "\"success\":true}");
     } else if (command.equals("color")) {
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
+      effectChange(STATIC_COLOR);
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("clear") || command.equals("clearall")) {
       clearCmd();
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
-      String effect = root["effect"]["name"].asString();
+      String effect = root["effect"]["script"].asString();
       int speed = root["effect"]["speed"];
       
-      if (effect.equals("Rainbow mood")) {
+      if (effect.equals("hyperion_udp")) {
+        effectChange(HYPERION_UDP);
+      } else if (effect.equals("rainbow")) {
         effectChange(RAINBOW);
-      } else if (effect.equals("Fire2012")) {
+      } else if (effect.equals("fire2012")) {
         effectChange(FIRE2012);
       }
       _tcpClient.println("{\"success\":true}");

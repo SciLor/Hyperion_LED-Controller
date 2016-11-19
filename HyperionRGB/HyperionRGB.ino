@@ -83,7 +83,7 @@ void updateLed(int id, byte r, byte g, byte b) {
 void refreshLeds(void) {
   Log.debug("refresh LEDs");
   ledStrip.show();
-  changeMode(AMBILIGHT);
+  changeMode(HYPERION_UDP);
   resetThread.reset();
 }
 
@@ -217,7 +217,7 @@ void loop(void) {
       break;
     case STATIC_COLOR:
       break;
-    case AMBILIGHT:
+    case HYPERION_UDP:
       break;
   }
 }

@@ -58,7 +58,6 @@ void WrapperJsonServer::readData(void) {
         "\"success\":true}");
     } else if (command.equals("color")) {
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
-      effectChange(STATIC_COLOR);
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("clear") || command.equals("clearall")) {
       clearCmd();

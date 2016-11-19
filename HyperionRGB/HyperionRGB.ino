@@ -89,8 +89,8 @@ void refreshLeds(void) {
 
 void ledColorWipe(byte r, byte g, byte b) {
   Log.debug("LED color wipe: r=%i, g=%i, b=%i", r, g, b);
-  ledStrip.fillSolid(r, g, b);
   changeMode(STATIC_COLOR);
+  ledStrip.fillSolid(r, g, b);
 }
 void resetMode(void) {
   Log.info("Reset Mode");

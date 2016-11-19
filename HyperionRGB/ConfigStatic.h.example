@@ -32,7 +32,7 @@
 #define CONFIG_LED_COLOR_ORDER RGB
 #define CONFIG_LED_COUNT 50
 
-//OFF, RAINBOW, FIRE2012
+//OFF, HYPERION_UDP, STATIC_COLOR, RAINBOW, FIRE2012
 #define CONFIG_LED_STANDARD_MODE FIRE2012
 
 /*------------------------------------------------*/

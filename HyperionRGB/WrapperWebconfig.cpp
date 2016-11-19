@@ -356,6 +356,7 @@ T WrapperWebconfig::getSelectedEntry(String selectedEntryValue, LinkedList<Selec
 
 void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target) {
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Off", "Off", active == OFF, OFF));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Hyperion", "Hyperion UDP", active == HYPERION_UDP, HYPERION_UDP));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Static", "Static color", active == STATIC_COLOR, STATIC_COLOR));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Rainbow", "Rainbow", active == RAINBOW, RAINBOW));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Fire2012", "Fire2012", active == FIRE2012, FIRE2012));

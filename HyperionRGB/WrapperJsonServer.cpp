@@ -57,8 +57,8 @@ void WrapperJsonServer::readData(void) {
         "\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},"
         "\"success\":true}");
     } else if (command.equals("color")) {
-      ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
       int duration = root["duration"];
+      ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("clear") || command.equals("clearall")) {
       clearCmd();

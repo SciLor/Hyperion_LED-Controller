@@ -67,8 +67,6 @@ void changeMode(Mode newMode, double interval = 1.0d) {
 
     switch (activeMode) {
       case RAINBOW:
-        animationThread.setInterval(interval);
-        break;
       case FIRE2012:
         animationThread.setInterval(interval);
         break;

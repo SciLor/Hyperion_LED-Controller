@@ -58,6 +58,7 @@ void WrapperJsonServer::readData(void) {
         "\"success\":true}");
     } else if (command.equals("color")) {
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
+      int duration = root["duration"];
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("clear") || command.equals("clearall")) {
       clearCmd();
@@ -66,6 +67,7 @@ void WrapperJsonServer::readData(void) {
       String effect = root["effect"]["script"].asString();
       double speed = root["effect"]["speed"];
       double interval = 1 / speed;
+      int duration = root["duration"];
       
       if (effect.equals("hyperion_udp")) {
         effectChange(HYPERION_UDP);

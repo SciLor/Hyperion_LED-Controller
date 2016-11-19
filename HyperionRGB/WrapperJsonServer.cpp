@@ -64,16 +64,16 @@ void WrapperJsonServer::readData(void) {
       clearCmd();
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
-      String effect = root["effect"]["script"].asString();
+      String effect = root["effect"]["name"].asString();
       double speed = root["effect"]["speed"];
       double interval = 1 / speed;
       int duration = root["duration"];
       
-      if (effect.equals("hyperion_udp")) {
+      if (effect.equals("Hyperion UDP")) {
         effectChange(HYPERION_UDP);
-      } else if (effect.equals("rainbow")) {
+      } else if (effect.equals("Rainbow mood")) {
         effectChange(RAINBOW, interval);
-      } else if (effect.equals("fire2012")) {
+      } else if (effect.equals("Fire2012")) {
         effectChange(FIRE2012, interval);
       }
       _tcpClient.println("{\"success\":true}");

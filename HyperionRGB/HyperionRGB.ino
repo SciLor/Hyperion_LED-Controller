@@ -33,6 +33,7 @@ WrapperJsonServer jsonServer;
 #endif
 
 Mode activeMode;
+boolean autoswitch;
 
 ThreadController threadController = ThreadController();
 Thread statusThread = Thread();
@@ -64,25 +65,37 @@ void changeMode(Mode newMode, double interval = 1.0d) {
   if (newMode != activeMode) {
     Log.info("Mode changed to %i", newMode);
     activeMode = newMode;
-
+    if (!autoswitch)
+      udpLed.stop();
+    
     switch (activeMode) {
       case RAINBOW:
       case FIRE2012:
         animationThread.setInterval(interval);
         break;
+      case HYPERION_UDP:
+        if (!autoswitch)
+          udpLed.begin();
     }
   }
 }
 
 void updateLed(int id, byte r, byte g, byte b) {
-  Log.verbose("LED %i, r=%i, g=%i, b=%i", id + 1, r, g, b);
-  ledStrip.leds[id].setRGB(r, g, b);
+  if (activeMode == HYPERION_UDP) {
+    Log.verbose("LED %i, r=%i, g=%i, b=%i", id + 1, r, g, b);
+    ledStrip.leds[id].setRGB(r, g, b);
+  }
 }
 void refreshLeds(void) {
-  Log.debug("refresh LEDs");
-  ledStrip.show();
-  changeMode(HYPERION_UDP);
-  resetThread.reset();
+  if (activeMode == HYPERION_UDP) {
+    Log.debug("refresh LEDs");
+    ledStrip.show();
+    if (autoswitch)
+      resetThread.reset();
+  } else if (autoswitch) {
+    changeMode(HYPERION_UDP);
+    Log.info("Autoswitch to HYPERION_UDP");
+  }
 }
 
 void ledColorWipe(byte r, byte g, byte b) {
@@ -124,6 +137,7 @@ void initConfig(void) {
     dns = Config::cfg2ip(cfg->wifi.dns);
     jsonServerPort = cfg->ports.jsonServer;
     udpLedPort = cfg->ports.udpLed;
+    autoswitch = cfg->led.autoswitch;
     
     Log.info("CFG=%s", "EEPROM config loaded");
     Config::logConfig();
@@ -140,6 +154,7 @@ void initConfig(void) {
     #endif
     jsonServerPort = CONFIG_PORT_JSON_SERVER;
     udpLedPort = CONFIG_PORT_UDP_LED;
+    autoswitch = CONFIG_LED_HYPERION_AUTOSWITCH;
     
     Log.info("CFG=%s", "Static config loaded");
   #endif
@@ -175,7 +190,11 @@ void setup(void) {
   animationThread.setInterval(500);
   
   resetThread.onRun(resetMode);
-  resetThread.setInterval(5000);
+  #ifdef CONFIG_ENABLE_WEBCONFIG
+    resetThread.setInterval(Config::getConfig()->led.timeoutMs);
+  #else
+    resetThread.setInterval(CONFIG_LED_STANDARD_MODE_TIMEOUT_MS);
+  #endif
   resetThread.enabled = false;
   threadController.add(&resetThread);
   
@@ -192,8 +211,10 @@ void setup(void) {
   #else
     ota.begin(CONFIG_WIFI_HOSTNAME); 
   #endif
-  
-  udpLed.begin();
+
+  if (autoswitch || activeMode == HYPERION_UDP)
+    udpLed.begin();
+    
   udpLed.onUpdateLed(updateLed);
   udpLed.onRefreshLeds(refreshLeds);
 

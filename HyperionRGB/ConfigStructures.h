@@ -28,8 +28,10 @@ typedef struct {
 
 typedef struct {
   uint8_t idleMode;
+  uint32_t timeoutMs;
+  boolean autoswitch;
 
-  char spacer[64];
+  char spacer[59];
 } ConfigLed;
 
 typedef struct {

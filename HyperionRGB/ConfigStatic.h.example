@@ -34,6 +34,8 @@
 
 //OFF, HYPERION_UDP, STATIC_COLOR, RAINBOW, FIRE2012
 #define CONFIG_LED_STANDARD_MODE FIRE2012
+#define CONFIG_LED_HYPERION_AUTOSWITCH true 
+#define CONFIG_LED_STANDARD_MODE_TIMEOUT_MS 5000 
 
 /*------------------------------------------------*/
 /*Main configuration*/

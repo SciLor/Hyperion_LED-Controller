@@ -58,6 +58,11 @@ String WrapperWebconfig::escape(uint16_t text) {
   sprintf(buf, "%u", text);
   return String(buf);  
 }
+String WrapperWebconfig::escape(uint32_t text) {
+  char buf[10];
+  sprintf(buf, "%u", text);
+  return String(buf);  
+}
 String WrapperWebconfig::ipToString(ConfigIP ip) {
   char buf[16];
   if (ip.a == 0)
@@ -115,6 +120,23 @@ void WrapperWebconfig::changeConfig(void) {
         cfg->ports.udpLed = 19446;
     } else if (argName == "led-idleMode") {
       cfg->led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
+    } else if (argName == "led-timeoutMs") {
+      if (argValue.equals("0")) {
+        cfg->led.timeoutMs = 0;
+      } else {
+        int val = argValue.toInt();
+        if (val > 0) {
+          cfg->led.timeoutMs = val;
+        } else {
+          cfg->led.timeoutMs = 5000;
+        }
+      }
+    } else if (argName == "led-autoswitch") {
+      if (argValue.equals("led-autoswitch")) {
+        cfg->led.autoswitch = true;
+      } else {
+        cfg->led.autoswitch = false;
+      }
     } else if (argName == "saveRestart") {
       restart = true;
     } else if (argName == "loadStatic") {
@@ -165,8 +187,11 @@ String WrapperWebconfig::htmlTemplate(String title, String content) {
   html += "     if( !confirm('Are you sure you want to overwrite your settings with those from the ConfigStatic.h?') ) ";
   html += "          event.preventDefault();";
   html += "  });";
+  html += "  $('[data-toggle=\"tooltip\"]').tooltip();";
   html += "});";
   html += "</script>";
+
+  html += "<style>.tooltip-inner { text-align: left; }</style>";
   
   html += "</head>";
   
@@ -196,28 +221,49 @@ String WrapperWebconfig::groupTemplate(String title, String body) {
   return html;
 }
 
-String WrapperWebconfig::entryTemplate(String title, String id, String content) {
+String WrapperWebconfig::entryTemplate(String label, String tooltip, String id, String content) {
   String html = "";
   
   html += "<div class=\"form-group\">";
-  html +=   "<label class=\"col-md-4 control-label\" for=\"" + id + "\">" + title + "</label>";
+  html +=   "<label class=\"col-md-4 control-label\" for=\"" + id + "\">" + label + "</label>";
   html +=   "<div class=\"col-md-4\">";
-  html += content;
+  html +=     content;
   html +=   "</div>";
+
+  if (tooltip.length() > 0) {
+    html +=   "<div class=\"col-md-4\">";
+    html +=     "<span class=\"badge\" data-toggle=\"tooltip\" title=\"" + tooltip + "\">i</span>";
+    html +=   "</div>";
+  }
+  
   html += "</div>";
 
   return html;
 }
 
-String WrapperWebconfig::textTemplate(String title, String id, String text, String placeholder = "", int maxLen = 524288) {
+String WrapperWebconfig::textTemplate(String label, String tooltip, String id, String text, String placeholder = "", int maxLen = 524288) {
   String html = "";
 
-  html += "<input id=\"" + id + "\" name=\"" + id + "\" type=\"text\" maxlength=\"" + maxLen + "\" placeholder=\"" + placeholder + "\" class=\"form-control input-md\" value=\"" + text + "\">";
+  html += "<input id=\"" + id + "\" name=\"" + id + "\" type=\"text\" maxlength=\"" + maxLen + "\" placeholder=\"" + placeholder + "\" class=\"form-control input-md\" value=\"" + text + "\"/>";
 
-  return entryTemplate(title, id, html);
+  return entryTemplate(label, tooltip, id, html);
 }
 
-String WrapperWebconfig::selectTemplate(String title, String id, LinkedList<SelectEntryBase*>* entries) {
+String WrapperWebconfig::checkboxTemplate(String label, String tooltip, String id, boolean isChecked) {
+  String html = "";
+  String checked = "";
+  if (isChecked) {
+    checked = " checked=\"checked\"";
+  }
+  html += "<label class=\"checkbox-inline\">";
+  html +=   "<input type=\"hidden\" value=\"\" name=\"" + id + "\">";
+  html +=   "<input id=\"" + id + "\" name=\"" + id + "\" type=\"checkbox\" value=\"" + id + "\" class=\"input-md\"" + checked + "/>";
+  html += "</label>";
+
+  return entryTemplate(label, tooltip, id, html);
+}
+
+String WrapperWebconfig::selectTemplate(String label, String tooltip, String id, LinkedList<SelectEntryBase*>* entries) {
   String html = "";
 
   html += "<select id=\"" + id + "\" name=\"" + id + "\" class=\"form-control\">";
@@ -232,7 +278,7 @@ String WrapperWebconfig::selectTemplate(String title, String id, LinkedList<Sele
   }
   html += "</select>";
 
-  return entryTemplate(title, id, html);
+  return entryTemplate(label, tooltip, id, html);
 }
 
 String WrapperWebconfig::config(void) {
@@ -253,31 +299,33 @@ String WrapperWebconfig::config(void) {
   html += "<legend>ESP8266 LED Coniguration</legend>";
 
   groupContent = "";
-  groupContent += textTemplate("WiFi SSID", "wifi-ssid", escape(cfg->wifi.ssid), "", sizeof(cfg->wifi.ssid)-1);
+  groupContent += textTemplate("WiFi SSID", "", "wifi-ssid", escape(cfg->wifi.ssid), "", sizeof(cfg->wifi.ssid)-1);
 
   String passwordPlaceholder = "no password set";
   if (cfg->wifi.password[0] != 0)
     passwordPlaceholder = "password saved";
-  groupContent += textTemplate("WiFi Password", "wifi-password", "", passwordPlaceholder, sizeof(cfg->wifi.password)-1);
+  groupContent += textTemplate("WiFi Password", "", "wifi-password", "", passwordPlaceholder, sizeof(cfg->wifi.password)-1);
 
-  groupContent += textTemplate("IP", "wifi-ip", ipToString(cfg->wifi.ip), "leave empty for dhcp", 15);
-  groupContent += textTemplate("Subnet", "wifi-subnet", ipToString(cfg->wifi.subnet), "255.255.255.0", 15);
-  groupContent += textTemplate("DNS Server", "wifi-dns", ipToString(cfg->wifi.dns), "192.168.1.1", 15);
+  groupContent += textTemplate("IP","",  "wifi-ip", ipToString(cfg->wifi.ip), "leave empty for dhcp", 15);
+  groupContent += textTemplate("Subnet","",  "wifi-subnet", ipToString(cfg->wifi.subnet), "255.255.255.0", 15);
+  groupContent += textTemplate("DNS Server","",  "wifi-dns", ipToString(cfg->wifi.dns), "192.168.1.1", 15);
   
-  groupContent += textTemplate("Module Hostname", "wifi-hostname", escape(cfg->wifi.hostname), "ESP8266", sizeof(cfg->wifi.hostname)-1);
+  groupContent += textTemplate("Module Hostname","",  "wifi-hostname", escape(cfg->wifi.hostname), "ESP8266", sizeof(cfg->wifi.hostname)-1);
   
   html += groupTemplate("WiFi", groupContent);
   
   if (wifiReady) {
     groupContent = "";
-    groupContent += textTemplate("JSON Server Port", "ports-json", escape(cfg->ports.jsonServer), "19444", 5);
-    groupContent += textTemplate("UDP LED Port", "ports-udp", escape(cfg->ports.udpLed), "19446", 5);
+    groupContent += textTemplate("JSON Server Port","",  "ports-json", escape(cfg->ports.jsonServer), "19444", 5);
+    groupContent += textTemplate("UDP LED Port","",  "ports-udp", escape(cfg->ports.udpLed), "19446", 5);
     html += groupTemplate("Ports", groupContent);
     groupContent = "";
 
     _idleModes = new LinkedList<SelectEntryBase*>();
     getIdleModes(cfg->led.idleMode, _idleModes);
-    groupContent += selectTemplate("LED Idle Mode", "led-idleMode", _idleModes);
+    groupContent += selectTemplate("LED Idle Mode", "", "led-idleMode", _idleModes);
+    groupContent += checkboxTemplate("Autoswitch to Hyperion_UDP/Idle Mode", "Automatically switch to Hyperion_UDP when UDP Data arriving and switch back to idle mode after timeout", "led-autoswitch", cfg->led.autoswitch);
+    groupContent += textTemplate("Timeout Fallback in MS", "Switches back to Idle Mode after x milliseconds when no UDP data is arriving",  "led-timeoutMs", escape(cfg->led.timeoutMs), "5000", 10);
     clearLinkedList(_idleModes);
     
     html += groupTemplate("LEDs", groupContent);

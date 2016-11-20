@@ -3,8 +3,8 @@
 
 #include "BaseHeader.h"
 #include <ArduinoJson.h>
-#include <WifiServer.h>
-#include <WifiClient.h>
+#include <WiFiServer.h>
+#include <WiFiClient.h>
 
 #define TCP_BUFFER 512
 

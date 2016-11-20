@@ -69,6 +69,12 @@ void changeMode(Mode newMode, double interval = 1.0d) {
       udpLed.stop();
     
     switch (activeMode) {
+      case OFF:
+        ledStrip.clear();
+        ledStrip.show();
+        break;
+      case STATIC_COLOR:
+        break;
       case RAINBOW:
       case FIRE2012:
         animationThread.setInterval(interval);

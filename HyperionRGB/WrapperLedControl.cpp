@@ -105,7 +105,7 @@ void WrapperLedControl::fire2012Step(void) {
    
    // Step 3.  Randomly ignite new 'sparks' of _fire2012Heat near the bottom
    if( random8() < SPARKING ) {
-     int y = random8(7);
+     int y = random8(min(7, _ledCount - 1));
      _fire2012Heat[y] = qadd8(_fire2012Heat[y], random8(160,255));
    }
 

@@ -9,7 +9,7 @@
 
 #include "WrapperWiFi.h"
 #include "WrapperOTA.h"
-#include "WrapperFastLed.h"
+#include "WrapperLedControl.h"
 #include "WrapperUdpLed.h"
 #include "WrapperJsonServer.h"
 
@@ -23,7 +23,7 @@ LoggerInit loggerInit;
 WrapperWiFi wifi;
 WrapperOTA ota;
 
-WrapperFastLed ledStrip;
+WrapperLedControl ledStrip;
 
 WrapperUdpLed udpLed;
 WrapperJsonServer jsonServer;
@@ -186,7 +186,7 @@ void setup(void) {
   
   initConfig();
   ota = WrapperOTA();
-  ledStrip = WrapperFastLed();
+  ledStrip = WrapperLedControl();
 
   statusThread.onRun(statusInfo);
   statusThread.setInterval(5000);

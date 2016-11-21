@@ -1,11 +1,11 @@
-#ifndef WrapperFastLed_h
-#define WrapperFastLed_h
+#ifndef WrapperLedControl_h
+#define WrapperLedControl_h
 
 #include "BaseHeader.h"
 
 #include <FastLED.h>
 
-class WrapperFastLed {
+class WrapperLedControl {
   public:
     void
       begin(),

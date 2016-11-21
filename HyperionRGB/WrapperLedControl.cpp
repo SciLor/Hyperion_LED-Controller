@@ -1,6 +1,6 @@
-#include "WrapperFastLed.h"
+#include "WrapperLedControl.h"
 
-void WrapperFastLed::begin() {
+void WrapperLedControl::begin() {
   #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
     Log.debug("Chipset=%s, dataPin=%i, clockPin=%s, colorOrder=%i, ledCount=%i", "Clockless", CONFIG_LED_DATAPIN, "NONE", CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
   #else
@@ -18,24 +18,24 @@ void WrapperFastLed::begin() {
   #endif
 }
 
-void WrapperFastLed::show(void) {
+void WrapperLedControl::show(void) {
   FastLED.show();
 }
 
-void WrapperFastLed::clear(void) {
+void WrapperLedControl::clear(void) {
   FastLED.clear();
 }
 
-void WrapperFastLed::fillSolid(CRGB color) {
+void WrapperLedControl::fillSolid(CRGB color) {
   fill_solid(leds, _ledCount, color);
   show();
 }
 
-void WrapperFastLed::fillSolid(byte r, byte g, byte b) {
+void WrapperLedControl::fillSolid(byte r, byte g, byte b) {
   fillSolid(CRGB(r, g, b));
 }
 
-void WrapperFastLed::rainbowStep(void) {
+void WrapperLedControl::rainbowStep(void) {
   for (int i=0; i < _ledCount; i++) {
     leds[i] = wheel((i + _rainbowStepState) % 255);
   }  
@@ -48,7 +48,7 @@ void WrapperFastLed::rainbowStep(void) {
   }
 }
 
-CRGB WrapperFastLed::wheel(byte wheelPos) {
+CRGB WrapperLedControl::wheel(byte wheelPos) {
   CRGB color = CRGB();
   if (wheelPos < 85) {
    return color.setRGB(wheelPos * 3, 255 - wheelPos * 3, 0);
@@ -75,7 +75,7 @@ CRGB WrapperFastLed::wheel(byte wheelPos) {
 // Default 120, suggested range 50-200.
 #define SPARKING 120
 
-void WrapperFastLed::fire2012Step(void) {
+void WrapperLedControl::fire2012Step(void) {
     // Step 1.  Cool down every cell a little
    for( int i = 0; i < _ledCount; i++) {
      _fire2012Heat[i] = qsub8( _fire2012Heat[i],  random8(0, ((COOLING * 10) / _ledCount) + 2));

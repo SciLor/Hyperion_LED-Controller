@@ -27,9 +27,9 @@ void WrapperLedControl::begin() {
 
 void WrapperLedControl::show(void) {
   #if defined CONFIG_LED_PWM
-    analogWrite(CONFIG_LED_PWM_RED, leds[0].red);
-    analogWrite(CONFIG_LED_PWM_GREEN, leds[0].green);
-    analogWrite(CONFIG_LED_PWM_BLUE, leds[0].blue);
+    analogWrite(CONFIG_LED_PWM_RED, map(leds[0].red, 0, 255, 0, PWMRANGE));
+    analogWrite(CONFIG_LED_PWM_GREEN, map(leds[0].green, 0, 255, 0, PWMRANGE));
+    analogWrite(CONFIG_LED_PWM_BLUE, map(leds[0].blue, 0, 255, 0, PWMRANGE));
   #else
     FastLED.show();
   #endif

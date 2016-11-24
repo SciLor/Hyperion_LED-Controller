@@ -1,8 +1,13 @@
-#include "WrapperFastLed.h"
+#include "WrapperLedControl.h"
 
-void WrapperFastLed::begin() {
+void WrapperLedControl::begin() {
   #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
     Log.debug("Chipset=%s, dataPin=%i, clockPin=%s, colorOrder=%i, ledCount=%i", "Clockless", CONFIG_LED_DATAPIN, "NONE", CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
+  #elif defined CONFIG_LED_PWM
+    Log.debug("Chipset=%s, redPin=%i, greenPin=%i, bluePin=%i, ledCount=%i", "PWM", CONFIG_LED_PWM_RED, CONFIG_LED_PWM_GREEN, CONFIG_LED_PWM_BLUE, CONFIG_LED_COUNT);
+    #if CONFIG_LED_COUNT != 1
+      #error "PWM only supports LED count set to one (even if you have multiple LEDs on your strip, they will all show the same color)"
+    #endif
   #else
     Log.debug("Chipset=%i, dataPin=%i, clockPin=%i, colorOrder=%i, ledCount=%i", CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
   #endif
@@ -13,29 +18,41 @@ void WrapperFastLed::begin() {
   
   #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
     FastLED.addLeds<CONFIG_LED_CLOCKLESS_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_COLOR_ORDER>(leds, _ledCount);
+  #elif defined CONFIG_LED_PWM
+    //Nothing to to
   #else
     FastLED.addLeds<CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER>(leds, _ledCount);
   #endif
 }
 
-void WrapperFastLed::show(void) {
-  FastLED.show();
+void WrapperLedControl::show(void) {
+  #if defined CONFIG_LED_PWM
+    analogWrite(CONFIG_LED_PWM_RED, map(leds[0].red, 0, 255, 0, PWMRANGE));
+    analogWrite(CONFIG_LED_PWM_GREEN, map(leds[0].green, 0, 255, 0, PWMRANGE));
+    analogWrite(CONFIG_LED_PWM_BLUE, map(leds[0].blue, 0, 255, 0, PWMRANGE));
+  #else
+    FastLED.show();
+  #endif
 }
 
-void WrapperFastLed::clear(void) {
-  FastLED.clear();
+void WrapperLedControl::clear(void) {
+  #if defined CONFIG_LED_PWM
+    leds[0] = CRGB::Black;
+  #else
+    FastLED.clear();
+  #endif
 }
 
-void WrapperFastLed::fillSolid(CRGB color) {
+void WrapperLedControl::fillSolid(CRGB color) {
   fill_solid(leds, _ledCount, color);
   show();
 }
 
-void WrapperFastLed::fillSolid(byte r, byte g, byte b) {
+void WrapperLedControl::fillSolid(byte r, byte g, byte b) {
   fillSolid(CRGB(r, g, b));
 }
 
-void WrapperFastLed::rainbowStep(void) {
+void WrapperLedControl::rainbowStep(void) {
   for (int i=0; i < _ledCount; i++) {
     leds[i] = wheel((i + _rainbowStepState) % 255);
   }  
@@ -48,7 +65,7 @@ void WrapperFastLed::rainbowStep(void) {
   }
 }
 
-CRGB WrapperFastLed::wheel(byte wheelPos) {
+CRGB WrapperLedControl::wheel(byte wheelPos) {
   CRGB color = CRGB();
   if (wheelPos < 85) {
    return color.setRGB(wheelPos * 3, 255 - wheelPos * 3, 0);
@@ -75,7 +92,7 @@ CRGB WrapperFastLed::wheel(byte wheelPos) {
 // Default 120, suggested range 50-200.
 #define SPARKING 120
 
-void WrapperFastLed::fire2012Step(void) {
+void WrapperLedControl::fire2012Step(void) {
     // Step 1.  Cool down every cell a little
    for( int i = 0; i < _ledCount; i++) {
      _fire2012Heat[i] = qsub8( _fire2012Heat[i],  random8(0, ((COOLING * 10) / _ledCount) + 2));
@@ -88,7 +105,7 @@ void WrapperFastLed::fire2012Step(void) {
    
    // Step 3.  Randomly ignite new 'sparks' of _fire2012Heat near the bottom
    if( random8() < SPARKING ) {
-     int y = random8(7);
+     int y = random8(min(7, _ledCount - 1));
      _fire2012Heat[y] = qadd8(_fire2012Heat[y], random8(160,255));
    }
 

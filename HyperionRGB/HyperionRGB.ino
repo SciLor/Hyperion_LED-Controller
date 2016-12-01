@@ -77,13 +77,13 @@ void changeMode(Mode newMode, double interval = 0.0d) {
         break;
       case RAINBOW:
         if (interval == 0.0d)
-          interval = 500;
-        animationThread.setInterval(interval);
+          interval = 0.5d;
+        animationThread.setInterval(interval / 1000);
         break;
       case FIRE2012:
         if (interval == 0.0d)
-          interval = 16;
-        animationThread.setInterval(interval);
+          interval = 0.016d;
+        animationThread.setInterval(interval / 1000);
         break;
       case HYPERION_UDP:
         if (!autoswitch)

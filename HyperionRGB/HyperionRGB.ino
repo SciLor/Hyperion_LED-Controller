@@ -61,7 +61,7 @@ void animationStep() {
   }
 }
 
-void changeMode(Mode newMode, double interval = 1.0d) {
+void changeMode(Mode newMode, double interval = 0.0d) {
   if (newMode != activeMode) {
     Log.info("Mode changed to %i", newMode);
     activeMode = newMode;
@@ -76,8 +76,14 @@ void changeMode(Mode newMode, double interval = 1.0d) {
       case STATIC_COLOR:
         break;
       case RAINBOW:
+        if (interval == 0.0d)
+          interval = 0.5d;
+        animationThread.setInterval(interval / 1000);
+        break;
       case FIRE2012:
-        animationThread.setInterval(interval);
+        if (interval == 0.0d)
+          interval = 0.016d;
+        animationThread.setInterval(interval / 1000);
         break;
       case HYPERION_UDP:
         if (!autoswitch)
@@ -193,7 +199,7 @@ void setup(void) {
   threadController.add(&statusThread);
 
   animationThread.onRun(animationStep);
-  animationThread.setInterval(500);
+  animationThread.setInterval(1000);
   
   resetThread.onRun(resetMode);
   #ifdef CONFIG_ENABLE_WEBCONFIG

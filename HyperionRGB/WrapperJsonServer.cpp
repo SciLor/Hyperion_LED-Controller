@@ -65,9 +65,11 @@ void WrapperJsonServer::readData(void) {
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
       String effect = root["effect"]["name"].asString();
-      double speed = root["effect"]["speed"];
-      double interval = 1 / speed;
-      int duration = root["duration"];
+      double effectSpeed = root["effect"]["args"]["speed"];
+      int interval = 0;
+      if (effectSpeed > 0) {
+        interval = (int)(1000.0 / effectSpeed);
+      }
       
       if (effect.equals("Hyperion UDP")) {
         effectChange(HYPERION_UDP);
@@ -103,10 +105,10 @@ void WrapperJsonServer::clearCmd(void) {
   }
 }
 
-void WrapperJsonServer::onEffectChange(void(* function) (Mode, double)) {
+void WrapperJsonServer::onEffectChange(void(* function) (Mode, int)) {
   effectChangePointer = function;
 }
-void WrapperJsonServer::effectChange(Mode effect, double interval/* = 1.0d*/) {
+void WrapperJsonServer::effectChange(Mode effect, int interval/* = 0*/) {
   if (effectChangePointer) {
     effectChangePointer(effect, interval);
   }

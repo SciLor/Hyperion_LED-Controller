@@ -61,7 +61,7 @@ void animationStep() {
   }
 }
 
-void changeMode(Mode newMode, double interval = 0.0d) {
+void changeMode(Mode newMode, int interval = 0) {
   if (newMode != activeMode) {
     Log.info("Mode changed to %i", newMode);
     activeMode = newMode;
@@ -76,19 +76,21 @@ void changeMode(Mode newMode, double interval = 0.0d) {
       case STATIC_COLOR:
         break;
       case RAINBOW:
-        if (interval == 0.0d)
-          interval = 0.5d;
-        animationThread.setInterval(interval / 1000);
+        if (interval == 0)
+          interval = 500;
+        animationThread.setInterval(interval);
         break;
       case FIRE2012:
-        if (interval == 0.0d)
-          interval = 0.016d;
-        animationThread.setInterval(interval / 1000);
+        if (interval == 0)
+          interval = 16;
+        animationThread.setInterval(interval);
         break;
       case HYPERION_UDP:
         if (!autoswitch)
           udpLed.begin();
     }
+    if (interval > 0)
+      Log.debug("Interval set to %ims", interval);
   }
 }
 

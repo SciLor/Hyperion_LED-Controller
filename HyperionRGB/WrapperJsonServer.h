@@ -20,7 +20,7 @@ class WrapperJsonServer {
     void
       onLedColorWipe(void(* function) (byte, byte, byte)),
       onClearCmd(void(* function) (void)),
-      onEffectChange(void(* function) (Mode, double));
+      onEffectChange(void(* function) (Mode, int));
   private:
     void
       handleConnection(boolean newClient),
@@ -33,8 +33,8 @@ class WrapperJsonServer {
       clearCmd(void),
       (* clearCmdPointer) (void);
     void 
-      effectChange(Mode effect, double interval = 1.0d),
-      (* effectChangePointer) (Mode, double);
+      effectChange(Mode effect, int interval = 0),
+      (* effectChangePointer) (Mode, int);
   
     WiFiServer _tcpServer;
     WiFiClient _tcpClient;

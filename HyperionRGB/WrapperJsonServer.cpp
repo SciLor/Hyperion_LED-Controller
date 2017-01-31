@@ -61,7 +61,6 @@ void WrapperJsonServer::readData(void) {
         _tcpClient.print(_activeLedColor[1]);
         _tcpClient.print(",");
         _tcpClient.print(_activeLedColor[2]);
-        _tcpClient.print(",");
         
         _tcpClient.print("],"
           "\"hostname\":\"ESP8266\","

@@ -7,6 +7,7 @@ WrapperJsonServer::WrapperJsonServer(uint16_t ledCount, uint16_t tcpPort)
   : _tcpServer(tcpPort) {
   _ledCount = ledCount;
   _tcpPort = tcpPort;
+  _activeLedColor = new byte[3];
 }
 
 void WrapperJsonServer::begin(void) {
@@ -48,14 +49,25 @@ void WrapperJsonServer::readData(void) {
     String command = root["command"].asString();
     if (command.equals("serverinfo")) {
       Log.info("serverinfo");     
-      _tcpClient.println("{\"info\":{\"effects\":["
+      _tcpClient.print("{\"info\":{\"effects\":["
           "{\"args\":{\"speed\":1.0},\"name\":\"Hyperion UDP\",\"script\":\"hyperion_udp\"},"
           "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
           "{\"args\":{\"speed\":62.5},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
         "],"
-        "\"hostname\":\"ESP8266\","
-        "\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},"
-        "\"success\":true}");
+        "\"activeLedColor\":[");
+        
+        _tcpClient.print(_activeLedColor[0]);
+        _tcpClient.print(",");
+        _tcpClient.print(_activeLedColor[1]);
+        _tcpClient.print(",");
+        _tcpClient.print(_activeLedColor[2]);
+        _tcpClient.print(",");
+        
+        _tcpClient.print("],"
+          "\"hostname\":\"ESP8266\","
+          "\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},"
+          "\"success\":true}");
+        _tcpClient.println("");
     } else if (command.equals("color")) {
       int duration = root["duration"];
       ledColorWipe(root["color"][0], root["color"][1], root["color"][2]);
@@ -91,6 +103,9 @@ void WrapperJsonServer::onLedColorWipe(void(* function) (byte, byte, byte)) {
   ledColorWipePointer = function;
 }
 void WrapperJsonServer::ledColorWipe(byte r, byte g, byte b) {
+  _activeLedColor[0] = r;
+  _activeLedColor[1] = g;
+  _activeLedColor[2] = b;
   if (ledColorWipePointer) {
     ledColorWipePointer(r, g, b);
   }
@@ -100,6 +115,9 @@ void WrapperJsonServer::onClearCmd(void(* function) (void)) {
   clearCmdPointer = function;
 }
 void WrapperJsonServer::clearCmd(void) {
+  _activeLedColor[0] = 0;
+  _activeLedColor[1] = 0;
+  _activeLedColor[2] = 0;
   if (clearCmdPointer) {
     clearCmdPointer();
   }

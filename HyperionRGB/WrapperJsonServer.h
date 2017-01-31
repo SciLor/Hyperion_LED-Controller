@@ -41,6 +41,8 @@ class WrapperJsonServer {
     
     uint16_t _ledCount;
     uint16_t _tcpPort;
+
+    byte* _activeLedColor;
 };
 
 #endif

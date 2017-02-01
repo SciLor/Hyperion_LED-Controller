@@ -54,15 +54,22 @@ void WrapperJsonServer::readData(void) {
           "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
           "{\"args\":{\"speed\":62.5},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
         "],"
-        "\"activeLedColor\":[");
-        
+        "\"activeLedColor\":[{\"RGB Value\":[");
+        //Dirty hack, workaround for each leds state of newer hyperion versions
+        /*  "activeLedColor" : [
+             {
+                "HEX Value" : [ "0xFF0036" ],
+                "HSL Value" : [ 347, 1.0, 0.50 ],
+                "RGB Value" : [ 255, 0, 54 ]
+             }
+          ], */
         _tcpClient.print(_activeLedColor[0]);
         _tcpClient.print(",");
         _tcpClient.print(_activeLedColor[1]);
         _tcpClient.print(",");
         _tcpClient.print(_activeLedColor[2]);
         
-        _tcpClient.print("],"
+        _tcpClient.print("]}],"
           "\"hostname\":\"ESP8266\","
           "\"priorities\":[],\"transform\":[{\"blacklevel\":[0.0,0.0,0.0],\"gamma\":[1.0,1.0,1.0],\"id\":\"default\",\"saturationGain\":1.0,\"threshold\":[0.0,0.0,0.0],\"valueGain\":1.0,\"whitelevel\":[1.0,1.0,1.0]}]},"
           "\"success\":true}");

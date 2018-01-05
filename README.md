@@ -24,3 +24,5 @@ c) LinkedList 1.2.3
 d) FastLED 3.1.3
 
 e) Logging https://github.com/SciLor/Arduino-logging-library - install manually
+
+f) ESP32 Webserver https://github.com/nhatuan84/esp32-webserver - install manually

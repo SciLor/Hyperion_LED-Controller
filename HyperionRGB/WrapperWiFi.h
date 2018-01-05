@@ -2,8 +2,8 @@
 #define WrapperWiFi_h
 
 #include "BaseHeader.h"
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
+#include <WiFi.h>
+#include <ESPmDNS.h>
 
 class WrapperWiFi {
   public:

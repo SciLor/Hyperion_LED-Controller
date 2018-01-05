@@ -2,7 +2,7 @@
 #define EnhancedThread_h
 
 #include "BaseHeader.h"
-#include <Thread.h>
+#include "Thread.h"
 
 class EnhancedThread: public Thread {
   public:

@@ -1,6 +1,6 @@
 
-#include <Thread.h>
-#include <ThreadController.h>
+#include "Thread.h"
+#include "ThreadController.h"
 #include "BaseHeader.h"
 
 #include "EnhancedThread.h"
@@ -15,7 +15,7 @@
 
 #include "WrapperWebconfig.h"
 
-#define LED D0 // LED in NodeMCU at pin GPIO16 (D0).
+#define LED 9 // LED in NodeMCU at pin GPIO16 (D0).
 int ledState = LOW;
 
 LoggerInit loggerInit;

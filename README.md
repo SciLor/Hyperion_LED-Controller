@@ -11,7 +11,7 @@ Tested with following following libraries (other versions may work):
 a) Arduino IDE 1.6.12, 1.8.5
 
 # Board Library
-a) esp8266 2.3.0 http://arduino.esp8266.com/stable/package_esp8266com_index.json - add to board urls
+a) esp8266 2.3.0 http://arduino.esp8266.com/stable/package_esp8266com_index.json - add to board urls - Version > 2.3.0 don't work
 
 # Libraries
 a) ArduinoThread 2.1.0, 2.1.1

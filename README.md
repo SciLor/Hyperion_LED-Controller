@@ -34,3 +34,38 @@ e) Logging https://github.com/SciLor/Arduino-logging-library - install manually:
 4. Compile and upload to your board
 
 # Configuration of Hyperion
+You need two running hyperion instances. The first grabs the data on e.g. a rasbperry pi and controls any local attached LED strips. This first instance is configured to forward its data to a second hyperion instance on the same machine. Be sure to only forward the UDP data:
+
+```
+"forwarder" :
+{
+"proto" : [ "localhost:19447" ]
+},
+```
+
+The second hyperion instance is configured to use UDP as device so that it can talk to the ESP directly. This second hyperion instance can run on the same machine as the first instance. Just make sure that you set the UDP ports, hostnames/IPs and LED number accordingly to the values you've configured for the ESP.
+
+```
+{
+      "colorOrder" : "rgb",
+      "maxpacket" : 1450,
+      "name" : "AmbiSZ-ESP8266",
+      "output" : "ESP8266:19446", ///
+      "protocol" : 0,
+      "rate" : 250000,
+      "type" : "udp"
+},
+
+
+"protoServer" : 
+{
+"port" : 19447
+},
+"jsonServer" : 
+{
+"port" : 19446
+},
+```
+
+
+There's a detailed instruction page for [controlling multiple devices](https://hyperion-project.org/wiki/Controlling-Multiple-Devices).

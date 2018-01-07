@@ -1,6 +1,6 @@
-# ESP8266 Hyperion LED Controller
+# ESP8266 Hyperion LED Controller (+ ESP32)
 
-This code allows you to use a ESP8266 with a fitting led strip as extension for [hyperion](https://github.com/hyperion-project) (ambilight clone).
+This code allows you to use a ESP8266/ESP32 with a fitting led strip as extension for [hyperion](https://github.com/hyperion-project) (ambilight clone).
 You need to configure hyperion to stream the leds as UDP to the esp.
 
 German Tutorial:
@@ -13,12 +13,14 @@ a) Arduino IDE 1.8.5
 # Board Library
 a) esp8266 2.3.0
 
+b) for esp32 https://github.com/espressif/arduino-esp32
+
 http://arduino.esp8266.com/stable/package_esp8266com_index.json
 
 add to board urls - Version 2.4.0 don't work (bug see https://github.com/esp8266/Arduino/issues/4085)
 
 # Libraries
-a) ArduinoThread 2.1.1
+a) ArduinoThread 2.1.1 - needs to be copied to the projects path to work on the esp32
 
 b) ArduinoJSON 5.12.0
 
@@ -77,9 +79,4 @@ The second hyperion instance is configured to use UDP as device so that it can t
 },
 ```
 
-
-<<<<<<< HEAD
 There's a detailed instruction page for [controlling multiple devices](https://hyperion-project.org/wiki/Controlling-Multiple-Devices).
-=======
-e) Logging https://github.com/SciLor/Arduino-logging-library - install manually
->>>>>>> 9b8f5e516113b5af156ed03f85edad9eccf56d4f

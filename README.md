@@ -8,7 +8,7 @@ https://forum-raspberrypi.de/forum/thread/25242-tutorial-esp8266-nodemcu-addon-w
 
 Tested with following following libraries (other versions may work):
 # IDE
-a) Arduino IDE 1.6.12, 1.8.5
+a) Arduino IDE 1.8.5
 
 # Board Library
 a) esp8266 2.3.0

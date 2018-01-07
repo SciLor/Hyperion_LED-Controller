@@ -78,4 +78,8 @@ The second hyperion instance is configured to use UDP as device so that it can t
 ```
 
 
+<<<<<<< HEAD
 There's a detailed instruction page for [controlling multiple devices](https://hyperion-project.org/wiki/Controlling-Multiple-Devices).
+=======
+e) Logging https://github.com/SciLor/Arduino-logging-library - install manually
+>>>>>>> 9b8f5e516113b5af156ed03f85edad9eccf56d4f

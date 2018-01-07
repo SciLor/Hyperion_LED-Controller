@@ -28,6 +28,8 @@ d) FastLED 3.1.6
 
 e) Logging https://github.com/SciLor/Arduino-logging-library - install manually: Download zip from github and install via Arduino IDE, Sketch -> Include Library -> Add .ZIP Library
 
+f) ESP32 Webserver https://github.com/nhatuan84/esp32-webserver - install manually (for esp32 only)
+
 # Installation
 
 # Configuration of the board

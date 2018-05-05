@@ -1,35 +1,35 @@
 #include "WrapperWebconfig.h"
 
 void WrapperWebconfig::begin() {
-  _server.onNotFound([&](){ WrapperWebconfig::handleNotFound(); });
-  _server.on("/", [&](){ WrapperWebconfig::handleRoot(); });
-  _server.begin();
+  _server->onNotFound([&](){ WrapperWebconfig::handleNotFound(); });
+  _server->on("/", [&](){ WrapperWebconfig::handleRoot(); });
+  _server->begin();
 }
 
 void WrapperWebconfig::handle(void) {
-  _server.handleClient();
+  _server->handleClient();
 }
 
 void WrapperWebconfig::handleNotFound(void) {
   String message = "File Not Found\n\n";
   message += "URI: ";
-  message += _server.uri();
+  message += _server->uri();
   message += "\nMethod: ";
-  message += (_server.method() == HTTP_GET)?"GET":"POST";
+  message += (_server->method() == HTTP_GET)?"GET":"POST";
   message += "\nArguments: ";
-  message += _server.args();
+  message += _server->args();
   message += "\n";
-  for (uint8_t i=0; i<_server.args(); i++){
-    message += " " + _server.argName(i) + ": " + _server.arg(i) + "\n";
+  for (uint8_t i=0; i<_server->args(); i++){
+    message += " " + _server->argName(i) + ": " + _server->arg(i) + "\n";
   }
-  _server.send(404, "text/plain", message);
+  _server->send(404, "text/plain", message);
 }
 
 void WrapperWebconfig::handleRoot(void) {
   Log.debug("Webconfig started HEAP=%i", ESP.getFreeHeap());
   initHelperVars();
   Log.debug("Webconfig initialized HEAP=%i", ESP.getFreeHeap());
-  if (_server.method() == HTTP_POST) {
+  if (_server->method() == HTTP_POST) {
     Log.debug("POST HEAP=%i", ESP.getFreeHeap());
     changeConfig();
   }
@@ -38,7 +38,7 @@ void WrapperWebconfig::handleRoot(void) {
   Log.debug("Webconfig max HEAP=%i", ESP.getFreeHeap());
   
   //Log.debug("Webconfig cleared HEAP=%i", ESP.getFreeHeap());
-  _server.send(200, "text/html", message);
+  _server->send(200, "text/html", message);
   Log.debug("Webconfig sent HEAP=%i", ESP.getFreeHeap());
 }
 
@@ -76,9 +76,9 @@ void WrapperWebconfig::changeConfig(void) {
   boolean restart = false;
   boolean loadStatic = false;
   
-  for (uint8_t i=0; i<_server.args(); i++){
-    String argName = _server.argName(i);
-    String argValue = _server.arg(i);
+  for (uint8_t i=0; i<_server->args(); i++){
+    String argName = _server->argName(i);
+    String argValue = _server->arg(i);
 
     Log.debug("Config: \"%s\":\"%s\"", argName.c_str(), argValue.c_str());
     

@@ -2,7 +2,11 @@
 #define WrapperWebconfig_h
 #include "BaseHeader.h"
 
-#include <ESP8266WebServer.h>
+#if defined(ESP8266)
+  #include <ESP8266WebServer.h>
+#elif defined(ESP32)
+  #include <ESP32WebServer.h>
+#endif
 #include <LinkedList.h>
 
 class SelectEntryBase {
@@ -74,9 +78,13 @@ class WrapperWebconfig {
     template<typename T>
     T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);
     
-    LinkedList<SelectEntryBase*>* _idleModes;;
-    
-    ESP8266WebServer _server = ESP8266WebServer(80);
+    LinkedList<SelectEntryBase*>* _idleModes;
+
+    #if defined(ESP8266)
+      ESP8266WebServer* _server = new ESP8266WebServer(80);
+    #elif defined(ESP32)
+      ESP32WebServer* _server = new ESP32WebServer(80);
+    #endif
 };
 
 #endif

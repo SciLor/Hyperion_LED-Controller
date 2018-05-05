@@ -1,4 +1,4 @@
-# ESP8266 Hyperion LED Controller (+ ESP32)
+# Hyperion LED Controller for ESP8266/ESP32
 
 This code allows you to use a ESP8266/ESP32 with a fitting led strip as extension for [hyperion](https://github.com/hyperion-project) (ambilight clone).
 You need to configure hyperion to stream the leds as UDP to the esp.
@@ -20,7 +20,7 @@ http://arduino.esp8266.com/stable/package_esp8266com_index.json
 add to board urls - Version 2.4.0 don't work (bug see https://github.com/esp8266/Arduino/issues/4085)
 
 # Libraries
-a) ArduinoThread 2.1.1 - needs to be copied to the projects path to work on the esp32
+a) ArduinoThread 2.1.1
 
 b) ArduinoJSON 5.12.0
 

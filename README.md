@@ -11,7 +11,7 @@ Tested with following following libraries (other versions may work):
 a) Arduino IDE 1.8.5
 
 # Board Library
-a) esp8266 2.3.0
+a) esp8266 2.4.1
 
 b) for esp32 https://github.com/espressif/arduino-esp32
 

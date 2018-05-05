@@ -78,9 +78,13 @@ class WrapperWebconfig {
     template<typename T>
     T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);
     
-    LinkedList<SelectEntryBase*>* _idleModes;;
-    
-    ESP8266WebServer _server = ESP8266WebServer(80);
+    LinkedList<SelectEntryBase*>* _idleModes;
+
+    #if defined(ESP8266)
+      ESP8266WebServer _server = ESP8266WebServer(80);
+    #elif defined(ESP32)
+      ESP32WebServer _server = ESP32WebServer(80);
+    #endif
 };
 
 #endif

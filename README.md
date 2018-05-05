@@ -76,3 +76,6 @@ The second hyperion instance is configured to use UDP as device so that it can t
 ```
 
 There's a detailed instruction page for [controlling multiple devices](https://hyperion-project.org/wiki/Controlling-Multiple-Devices).
+
+If you like my work spread the word!
+Donation: http://www.scilor.com/donate.html

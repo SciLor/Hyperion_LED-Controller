@@ -4,6 +4,7 @@ This code allows you to use a ESP8266/ESP32 with a fitting led strip as extensio
 You need to configure hyperion to stream the leds as UDP to the esp.
 
 English Tutorial: https://hyperion-project.org/threads/tutorial-wireless-led-extension-with-esp8266-esp32-for-hyperion.3004/
+French Tutorial: https://ambimod.jimdo.com/2017/01/12/tuto-faire-de-l-ambilight-sans-fil-avec-un-esp8266-nodemcu-et-la-biblioth%C3%A8que-fastled/
 German Tutorial: https://forum-raspberrypi.de/forum/thread/25242-tutorial-esp8266-nodemcu-addon-wifi-led-controller-udp/
 
 Tested with following following libraries (other versions may work):

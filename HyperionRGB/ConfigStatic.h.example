@@ -40,6 +40,7 @@
 #define CONFIG_LED_STANDARD_MODE FIRE2012
 #define CONFIG_LED_HYPERION_AUTOSWITCH true 
 #define CONFIG_LED_STANDARD_MODE_TIMEOUT_MS 5000 
+//#define CONFIG_LED_STATIC_COLOR CRGB(254, 254, 254)
 
 /*------------------------------------------------*/
 /*Main configuration*/

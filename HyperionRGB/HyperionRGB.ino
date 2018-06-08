@@ -74,6 +74,9 @@ void changeMode(Mode newMode, int interval = 0) {
         ledStrip.show();
         break;
       case STATIC_COLOR:
+        #ifdef CONFIG_LED_STATIC_COLOR
+          ledStrip.fillSolid(CONFIG_LED_STATIC_COLOR);
+        #endif
         break;
       case RAINBOW:
         if (interval == 0)

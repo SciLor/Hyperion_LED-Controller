@@ -120,6 +120,8 @@ void WrapperWebconfig::changeConfig(void) {
         cfg->ports.udpLed = 19446;
     } else if (argName == "led-idleMode") {
       cfg->led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
+    } else if (argName == "led-udpProtocol") {
+      cfg->misc.udpProtocol = getSelectedEntry<uint8_t>(argValue, _udpProtocols);
     } else if (argName == "led-timeoutMs") {
       if (argValue.equals("0")) {
         cfg->led.timeoutMs = 0;
@@ -322,11 +324,15 @@ String WrapperWebconfig::config(void) {
     groupContent = "";
 
     _idleModes = new LinkedList<SelectEntryBase*>();
+    _udpProtocols = new LinkedList<SelectEntryBase*>();
     getIdleModes(cfg->led.idleMode, _idleModes);
+    getUdpProtocols(cfg->misc.udpProtocol, _udpProtocols);
     groupContent += selectTemplate("LED Idle Mode", "", "led-idleMode", _idleModes);
     groupContent += checkboxTemplate("Autoswitch to Hyperion_UDP/Idle Mode", "Automatically switch to Hyperion_UDP when UDP Data arriving and switch back to idle mode after timeout", "led-autoswitch", cfg->led.autoswitch);
     groupContent += textTemplate("Timeout Fallback in MS", "Switches back to Idle Mode after x milliseconds when no UDP data is arriving",  "led-timeoutMs", escape(cfg->led.timeoutMs), "5000", 10);
+    groupContent += selectTemplate("LED UDP Protocol", "", "led-udpProtocol", _udpProtocols);
     clearLinkedList(_idleModes);
+    clearLinkedList(_udpProtocols);
     
     html += groupTemplate("LEDs", groupContent);
     
@@ -370,10 +376,13 @@ void WrapperWebconfig::initHelperVars(void) {
   ConfigStruct *cfg = Config::getConfig();
   
   _idleModes = new LinkedList<SelectEntryBase*>();
+  _udpProtocols = new LinkedList<SelectEntryBase*>();
   getIdleModes(cfg->led.idleMode, _idleModes);
+  getIdleModes(cfg->misc.udpProtocol, _udpProtocols);
 }
 void WrapperWebconfig::clearHelperVars(void) {
   clearLinkedList(_idleModes);
+  clearLinkedList(_udpProtocols);
 }
 void WrapperWebconfig::clearLinkedList(LinkedList<SelectEntryBase*>* target) {
   Log.debug("Clearing LinkedList HEAP=%i", ESP.getFreeHeap());
@@ -408,4 +417,10 @@ void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Static", "Static color", active == STATIC_COLOR, STATIC_COLOR));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Rainbow", "Rainbow", active == RAINBOW, RAINBOW));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Fire2012", "Fire2012", active == FIRE2012, FIRE2012));
+}
+
+void WrapperWebconfig::getUdpProtocols(uint8_t active, LinkedList<SelectEntryBase*>* target) {
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 0 (Raw)", active == 0, 0));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 2 (Fragment)", active == 2, 2));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 3 (TPM2 Fragments)", active == 3, 3));
 }

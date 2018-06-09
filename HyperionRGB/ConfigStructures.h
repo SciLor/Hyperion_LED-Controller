@@ -30,7 +30,7 @@ typedef struct {
   uint8_t idleMode;
   uint32_t timeoutMs;
   boolean autoswitch;
-
+  
   char spacer[59];
 } ConfigLed;
 
@@ -42,10 +42,17 @@ typedef struct {
 } ConfigPort;
 
 typedef struct {
+  uint8_t udpProtocol;
+  
+  char spacer[63];
+} ConfigMisc;
+
+typedef struct {
   uint8_t version;
   ConfigWifi wifi;
   ConfigLed led;
   ConfigPort ports;
+  ConfigMisc misc;
 } ConfigStruct;
 
 #endif

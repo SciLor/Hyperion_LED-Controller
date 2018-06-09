@@ -29,6 +29,7 @@ void Config::initConfig(void) {
       _cfgStruct.ports.udpLed = 19446;
       _cfgStruct.led.timeoutMs = 5000;
       _cfgStruct.led.autoswitch = true;
+      _cfgStruct.misc.udpProtocol = 0;
       EEPROM.end();
       saveConfig();
       Log.info("Configuration at 0x%x with v%i (v%i expected), new configuration created", CONFIG_START_ADDRESS, version, CONFIG_ACTIVE_VERSION);
@@ -75,6 +76,8 @@ void Config::loadStaticConfig(void) {
 
   _cfgStruct.ports.jsonServer = CONFIG_PORT_JSON_SERVER;
   _cfgStruct.ports.udpLed = CONFIG_PORT_UDP_LED;
+
+  _cfgStruct.misc.udpProtocol = CONFIG_PROTOCOL_UDP;
 
   saveConfig();
   Log.info("CFG=%s", "loadStaticConfig END");

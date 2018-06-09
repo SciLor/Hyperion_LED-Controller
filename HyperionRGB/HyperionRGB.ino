@@ -142,6 +142,7 @@ void initConfig(void) {
   const byte* dns;
   uint16_t jsonServerPort;
   uint16_t udpLedPort;
+  uint8_t udpProtocol;
 
   #ifdef CONFIG_ENABLE_WEBCONFIG
     //TODO Fallback
@@ -154,6 +155,7 @@ void initConfig(void) {
     dns = Config::cfg2ip(cfg->wifi.dns);
     jsonServerPort = cfg->ports.jsonServer;
     udpLedPort = cfg->ports.udpLed;
+    udpProtocol = cfg->misc.udpProtocol;
     autoswitch = cfg->led.autoswitch;
     
     Log.info("CFG=%s", "EEPROM config loaded");
@@ -171,13 +173,14 @@ void initConfig(void) {
     #endif
     jsonServerPort = CONFIG_PORT_JSON_SERVER;
     udpLedPort = CONFIG_PORT_UDP_LED;
+    udpProtocol = CONFIG_PROTOCOL_UDP;
     autoswitch = CONFIG_LED_HYPERION_AUTOSWITCH;
     
     Log.info("CFG=%s", "Static config loaded");
   #endif
   
   wifi = WrapperWiFi(ssid, password, ip, subnet, dns);
-  udpLed = WrapperUdpLed(CONFIG_LED_COUNT, udpLedPort);
+  udpLed = WrapperUdpLed(CONFIG_LED_COUNT, udpLedPort, udpProtocol);
   jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, jsonServerPort);
 }
 

@@ -79,7 +79,8 @@ class WrapperWebconfig {
     T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);
     
     LinkedList<SelectEntryBase*>* _idleModes;
-
+    LinkedList<SelectEntryBase*>* _udpProtocols;
+    
     #if defined(ESP8266)
       ESP8266WebServer* _server = new ESP8266WebServer(80);
     #elif defined(ESP32)

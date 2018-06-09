@@ -7,7 +7,7 @@
 class WrapperUdpLed {
   public:
     WrapperUdpLed() {};
-    WrapperUdpLed(uint16_t ledCount, uint16_t udpPort);
+    WrapperUdpLed(uint16_t ledCount, uint16_t udpPort, uint8_t udpProtocol);
     
     void
       begin(void),
@@ -22,6 +22,7 @@ class WrapperUdpLed {
     WiFiUDP _udp;
     uint16_t _ledCount;
     uint16_t _udpPort;
+    uint8_t _udpProtocol;
     byte* _udpBuffer;
     uint16_t _bufferSize;
     boolean _opened;

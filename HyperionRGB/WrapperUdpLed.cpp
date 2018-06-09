@@ -48,23 +48,52 @@ void WrapperUdpLed::handle(void) {
         }
         refreshLeds();
       } else {
-        Log.debug("UDP-Packet size expected=%i, actual=%i", _bufferSize, bytes);
+        Log.debug("Packet size for protocol 0 invalid: expected=%i, actual=%i", _bufferSize, bytes);
       }
     } else (_udpProtocol == 2) {
-      //Protocol 2: 
-      /// 0: Update ID & 0xF
-      /// 1: Fragment ?!
-      /// 2: First LED ID, high byte / 3: First LED ID, low byte --> int16_t?
-      /// 4: {0: R, 1: G, 2: B}
+      if (bytes > 4) {
+         _udp.readBytes(_udpBuffer, 4);
+        //Protocol 2: 
+        /// 0: Update ID & 0xF
+        /// 1: Fragment ?!
+        /// 2: First LED ID, high byte / 3: First LED ID, low byte --> int16_t?
+        /// 4: {0: R, 1: G, 2: B}
+        byte updateId = _udpBuffer[0] & 0x0F;
+        byte fragment = _udpBuffer[1];
+        int ledIdStart = 256 * _udpBuffer[2] + _udpBuffer[3]; //Multiply high byte
+        int ledIdEnd = ledIdStart + (bytes - 4) / 3;
+
+        if (ledIdEnd > _ledCount) {
+          _udp.readBytes(_udpBuffer, bytes - 4);
+          for (int i=ledIdStart; i<ledIdEnd; i++) {
+            updateLed(i, _udpBuffer[i*3+0], _udpBuffer[i*3+1], _udpBuffer[i*3+2]);
+          }
+          refreshLeds();
+        } else {
+          Log.debug("Too many LEDs: expected=%i, actual=%i", _ledCount, ledIdEnd);
+        }
+      } else {
+        Log.debug("Packet size too small for protocol 2, size=%i", bytes);
+      }
     } else (_udpProtocol == 3) {
-      //Protocol 3: TPM2.net
-      /// 0: 0x9C
-      /// 1: 0xDA
-      /// 2: Data length (LED count * 3), high byte, 3: Data length (LED count * 3), low byte --> int16_t?
-      /// 4: Fragment ID
-      /// 5: Fragment ID maximum
-      /// 6: {0: R, 1: G, 2: B}
-      /// 7: 0x36
+      if (bytes > 7) {
+        _udp.readBytes(_udpBuffer, 2);
+        //Protocol 3: TPM2.net
+        /// 0: 0x9C //magic byte
+        /// 1: 0xDA //data frame
+        /// 2: Data length (LED count * 3), high byte, 3: Data length (LED count * 3), low byte --> int16_t?
+        /// 4: Fragment ID
+        /// 5: Fragment ID maximum
+        /// 6: {0: R, 1: G, 2: B}
+        /// 7: 0x36
+        if (_udpBuffer[0] == 0x9C && _udpBuffer[1] == 0xDA) {
+          
+        } else {
+          Log.debug("Invalid packet structure, magic bytes for protocol 3 not found.");
+        }
+      } else {
+        Log.debug("Packet size too small for protocol 3, size=%i", bytes);
+      }
     }
   }
 }

@@ -73,7 +73,8 @@ class WrapperWebconfig {
       initHelperVars(void),
       clearHelperVars(void),
       clearLinkedList(LinkedList<SelectEntryBase*>* target),
-      getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target);
+      getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target),
+      getUdpProtocols(uint8_t active, LinkedList<SelectEntryBase*>* target);
 
     template<typename T>
     T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);

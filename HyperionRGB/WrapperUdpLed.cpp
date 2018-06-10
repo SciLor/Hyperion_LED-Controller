@@ -50,9 +50,9 @@ void WrapperUdpLed::handle(void) {
       } else {
         Log.debug("Packet size for protocol 0 invalid: expected=%i, actual=%i", _bufferSize, bytes);
       }
-    } else (_udpProtocol == 2) {
+    } else if (_udpProtocol == 2) {
       if (bytes > 4) {
-         _udp.readBytes(_udpBuffer, 4);
+        _udp.readBytes(_udpBuffer, 4);
         //Protocol 2: 
         /// 0: Update ID & 0xF
         /// 1: Fragment ?!
@@ -62,7 +62,8 @@ void WrapperUdpLed::handle(void) {
         byte fragment = _udpBuffer[1];
         int ledIdStart = 256 * _udpBuffer[2] + _udpBuffer[3]; //Multiply high byte
         int ledIdEnd = ledIdStart + (bytes - 4) / 3;
-
+        
+        Log.verbose("updateId: %X, fragment: %X, ledIdStart: %i, ledIdEnd: %i", updateId, fragment, ledIdStart, ledIdEnd);
         if (ledIdEnd > _ledCount) {
           _udp.readBytes(_udpBuffer, bytes - 4);
           for (int i=ledIdStart; i<ledIdEnd; i++) {
@@ -75,7 +76,7 @@ void WrapperUdpLed::handle(void) {
       } else {
         Log.debug("Packet size too small for protocol 2, size=%i", bytes);
       }
-    } else (_udpProtocol == 3) {
+    } else if (_udpProtocol == 3) {
       if (bytes > 7) {
         _udp.readBytes(_udpBuffer, 2);
         //Protocol 3: TPM2.net

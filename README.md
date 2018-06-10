@@ -1,13 +1,16 @@
 # Hyperion LED Controller for ESP8266/ESP32
 
 This code allows you to use a ESP8266/ESP32 with a fitting led strip as extension for [hyperion](https://github.com/hyperion-project) (ambilight clone).
-You need to configure hyperion to stream the leds as UDP to the esp.
+You need to configure hyperion to stream the leds as UDP to the esp. 
 
 English Tutorial: https://hyperion-project.org/threads/tutorial-wireless-led-extension-with-esp8266-esp32-for-hyperion.3004/
 
 French Tutorial: https://ambimod.jimdo.com/2017/01/12/tuto-faire-de-l-ambilight-sans-fil-avec-un-esp8266-nodemcu-et-la-biblioth%C3%A8que-fastled/
 
 German Tutorial: https://forum-raspberrypi.de/forum/thread/25242-tutorial-esp8266-nodemcu-addon-wifi-led-controller-udp/
+
+
+It will also work with enigmalight.
 
 Tested with following following libraries (other versions may work):
 ## IDE
@@ -120,6 +123,25 @@ The second hyperion instance is configured to use UDP as device so that it can t
 "port" : 19446
 },
 ```
+
+### Configuration for Engimalight
+Please use UDP Protocol "UDP_RAW" in ConfigStatic.h for the ESP part.
+You may need to change the output to the IP of your ESP! The prefix doesn't matter as the ESP should ignore it (Untested).
+
+enigmalight.conf
+```
+[device]
+name		ambilight
+output		192.168.1.123
+type		udp
+port		19446
+interval  	20000
+prefix		41 64 61 00 71 24
+channels	100
+rate		115200
+debug		off
+```
+Source: https://www.vuplus-support.org/wbb4/index.php?thread/107895-enigmalight-ambilight-f%C3%BCr-4k-boxen-arm/&postID=1661992#post1661992
 
 There's a detailed instruction page for [controlling multiple devices](https://hyperion-project.org/wiki/Controlling-Multiple-Devices).
 

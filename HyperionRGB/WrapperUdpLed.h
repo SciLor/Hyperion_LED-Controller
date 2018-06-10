@@ -34,6 +34,11 @@ class WrapperUdpLed {
     void 
       refreshLeds(void),
       (* refreshLedsPointer) (void);
+
+   void 
+      handleProtocolRaw(int bytes),
+      handleProtocolFragment(int bytes),
+      handleProtocolTPM2(int bytes);
 };
 
 #endif

@@ -34,6 +34,7 @@ f) ESP32 Webserver https://github.com/nhatuan84/esp32-webserver - install manual
 ## Installation
 
 ### Configuration of the board
+#### Basic
 1. Go to the `HyperionRGB` folder and create a copy of `ConfigStatic.h.example`. Remove the `.example` suffix
 2. Configure the `ConfigStatic.h` for your needs:
    - Select your LED chip type. All LEDs of the [FastLed](https://github.com/FastLED/FastLED) libraries are supported
@@ -43,6 +44,33 @@ f) ESP32 Webserver https://github.com/nhatuan84/esp32-webserver - install manual
    - You maydefine Wifi configuration but you can also change it from the Webinterface
 3. Open the `HyperionRGB.ino` the Arduino IDE
 4. Compile and upload to your board
+
+#### UDP Protocol
+This section describes the different UDP Protocol formats.
+##### Protocol 0 - Raw Format
+Standard format, will expect the leds data via udp as a block
+3 bytes per LED, Full LED set
+```
+[LED1: {0: R, 1: G, 2: B}, LED2: ...]
+```
+##### Protocol 2 - Fragmented Format 
+One byte per block:
+
+0. Update ID & 0xF
+1. Fragment ?!
+2. First LED ID, high byte
+3. First LED ID, low byte
+4. [LED1: {0: R, 1: G, 2: B}, LED2: ...]
+
+##### Protocol 3 - TPM2.net
+0. 0x9C //magic byte
+1. 0xDA //data frame
+2. Data length (LED count * 3), high byte
+3. Data length (LED count * 3), low byte
+4. Fragment ID
+5. Fragment ID maximum
+6. {0: R, 1: G, 2: B}
+7. 0x36
 
 ### Configuration of Hyperion
 #### Standalone

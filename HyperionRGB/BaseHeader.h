@@ -13,6 +13,7 @@
     (x_ < y_) ? x_ : y_; })*/
 
 enum Mode { OFF, HYPERION_UDP, STATIC_COLOR, RAINBOW, FIRE2012 };
+enum UdpProtocol { UDP_RAW, UDP_FRAGMENT, UDP_TPM2 };
 
 #endif
 

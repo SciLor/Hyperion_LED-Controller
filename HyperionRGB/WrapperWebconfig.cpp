@@ -420,7 +420,7 @@ void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>
 }
 
 void WrapperWebconfig::getUdpProtocols(uint8_t active, LinkedList<SelectEntryBase*>* target) {
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 0 (Raw)", active == 0, 0));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 2 (Fragment)", active == 2, 2));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 3 (TPM2 Fragments)", active == 3, 3));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 0 (Raw)", active == UDP_RAW, UDP_RAW));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 2 (Fragment)", active == UDP_FRAGMENT, UDP_FRAGMENT));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 3 (TPM2 Fragments)", active == UDP_TPM2, UDP_TPM2));
 }

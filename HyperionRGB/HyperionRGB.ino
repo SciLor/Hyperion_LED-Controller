@@ -142,7 +142,7 @@ void initConfig(void) {
   const byte* dns;
   uint16_t jsonServerPort;
   uint16_t udpLedPort;
-  uint8_t udpProtocol;
+  UdpProtocol udpProtocol;
 
   #ifdef CONFIG_ENABLE_WEBCONFIG
     //TODO Fallback

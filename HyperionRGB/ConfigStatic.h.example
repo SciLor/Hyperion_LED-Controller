@@ -58,4 +58,4 @@
 #define CONFIG_PORT_JSON_SERVER 19444
 #define CONFIG_PORT_UDP_LED 19446
 
-#define CONFIG_PROTOCOL_UDP 0 //0: RAW, 2: Fragmented, 3: TPM2 - Check the README
+#define CONFIG_PROTOCOL_UDP RAW //RAW, FRAGMENT, TPM2 - Hyperion 0: RAW, 2: Fragmented, 3: TPM2 - Check the README

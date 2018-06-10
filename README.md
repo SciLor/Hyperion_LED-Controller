@@ -47,13 +47,13 @@ f) ESP32 Webserver https://github.com/nhatuan84/esp32-webserver - install manual
 
 #### UDP Protocol
 This section describes the different UDP Protocol formats.
-##### Protocol 0 - Raw Format
+##### RAW - Protocol 0 - Raw Format
 Standard format, will expect the leds data via udp as a block
 3 bytes per LED, Full LED set
 ```
 [LED1: {0: R, 1: G, 2: B}, LED2: ...]
 ```
-##### Protocol 2 - Fragmented Format 
+##### FRAGMENT - Protocol 2 - Fragmented Format 
 One byte per block:
 
 0. Update ID & 0xF
@@ -62,7 +62,7 @@ One byte per block:
 3. First LED ID, low byte
 4. [LED1: {0: R, 1: G, 2: B}, LED2: ...]
 
-##### Protocol 3 - TPM2.net
+##### TPM2 - Protocol 3 - TPM2.net
 0. 0x9C //magic byte
 1. 0xDA //data frame
 2. Data length (LED count * 3), high byte

@@ -99,6 +99,7 @@ void Config::logConfig(void) {
   Log.debug("  idleMode=%i", _cfgStruct.led.idleMode);
   Log.debug("  timeoutMs=%i", _cfgStruct.led.timeoutMs);
   Log.debug("  autoswitch=%i", _cfgStruct.led.autoswitch);
+  Log.debug("  udpProtocol=%i", _cfgStruct.misc.udpProtocol);
 
   Log.debug("+PORTS+");
   Log.debug("  jsonServer=%i", _cfgStruct.ports.jsonServer);

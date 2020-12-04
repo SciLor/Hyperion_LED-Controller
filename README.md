@@ -77,6 +77,10 @@ The second hyperion instance is configured to use UDP as device so that it can t
 "port" : 19446
 },
 ```
+# For Hyperion NG throug web interface
+
+Go to Confiruration -> General, select Controller type: **udpraw** set Target IP (your ESP IP addr) and Port (**19446**).
+
 
 There's a detailed instruction page for [controlling multiple devices](https://hyperion-project.org/wiki/Controlling-Multiple-Devices).
 

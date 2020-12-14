@@ -52,7 +52,9 @@ void WrapperJsonServer::readData(void) {
       Log.info("serverinfo");     
       _tcpClient.print("{\"info\":{\"effects\":["
           "{\"args\":{\"speed\":1.0},\"name\":\"Hyperion UDP\",\"script\":\"hyperion_udp\"},"
-          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow swirl\",\"script\":\"rainbow\"},"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow swirl v2\",\"script\":\"rainbow_v2\"},"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow full\",\"script\":\"rainbow_full\"},"
           "{\"args\":{\"speed\":62.5},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
         "],"
         "\"activeLedColor\":[{\"RGB Value\":[");
@@ -92,8 +94,12 @@ void WrapperJsonServer::readData(void) {
       
       if (effect.equals("Hyperion UDP")) {
         effectChange(HYPERION_UDP);
-      } else if (effect.equals("Rainbow mood")) {
+      } else if (effect.equals("Rainbow swirl")) {
         effectChange(RAINBOW, interval);
+      } else if (effect.equals("Rainbow swirl v2")) {
+        effectChange(RAINBOW_V2, interval);
+      } else if (effect.equals("Rainbow full")) {
+        effectChange(RAINBOW_FULL, interval);
       } else if (effect.equals("Fire2012")) {
         effectChange(FIRE2012, interval);
       }

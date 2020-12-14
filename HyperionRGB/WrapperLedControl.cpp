@@ -64,6 +64,18 @@ void WrapperLedControl::rainbowStep(void) {
     _rainbowStepState = 0;
   }
 }
+void WrapperLedControl::rainbowFullStep(void) {
+  for (int i=0; i < _ledCount; i++) {
+    leds[i] = wheel(_rainbowStepState);
+  }  
+  show();
+  
+  if (_rainbowStepState < 255) {
+    _rainbowStepState++;
+  } else {
+    _rainbowStepState = 0;
+  }
+}
 
 CRGB WrapperLedControl::wheel(byte wheelPos) {
   CRGB color = CRGB();
@@ -77,6 +89,19 @@ CRGB WrapperLedControl::wheel(byte wheelPos) {
    return color.setRGB(0, wheelPos * 3, 255 - wheelPos * 3);
   }
   return color;
+}
+
+void WrapperLedControl::rainbowV2Step(void) {
+  for (uint16_t i=0; i < _ledCount; i++) {
+    leds[i] = wheel(((i + _rainbowV2StepState) % _ledCount) * 255 / _ledCount);
+  }  
+  show();
+  
+  if (_rainbowV2StepState < _ledCount) {
+    _rainbowV2StepState++;
+  } else {
+    _rainbowV2StepState = 0;
+  }
 }
 
 // Fire2012 by Mark Kriegsman, July 2012

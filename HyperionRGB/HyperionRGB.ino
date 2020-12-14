@@ -58,6 +58,12 @@ void animationStep() {
     case FIRE2012:
       ledStrip.fire2012Step();
       break;
+    case RAINBOW_V2:
+      ledStrip.rainbowV2Step();
+      break;
+    case RAINBOW_FULL:
+      ledStrip.rainbowFullStep();
+      break;
   }
 }
 
@@ -79,6 +85,8 @@ void changeMode(Mode newMode, int interval = 0) {
         #endif
         break;
       case RAINBOW:
+      case RAINBOW_V2:
+      case RAINBOW_FULL:
         if (interval == 0)
           interval = 500;
         animationThread.setInterval(interval);
@@ -252,6 +260,8 @@ void loop(void) {
   switch (activeMode) {
     case RAINBOW:
     case FIRE2012:
+    case RAINBOW_V2:
+    case RAINBOW_FULL:
       animationThread.runIfNeeded();
       break;
     case STATIC_COLOR:

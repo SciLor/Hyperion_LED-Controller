@@ -163,7 +163,7 @@ void initConfig(void) {
     dns = Config::cfg2ip(cfg->wifi.dns);
     jsonServerPort = cfg->ports.jsonServer;
     udpLedPort = cfg->ports.udpLed;
-    udpProtocol = (UdpProtocol)cfg->misc.udpProtocol;
+    udpProtocol = static_cast<UdpProtocol>(cfg->misc.udpProtocol);
     autoswitch = cfg->led.autoswitch;
     
     Log.info("CFG=%s", "EEPROM config loaded");

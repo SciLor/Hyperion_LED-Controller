@@ -43,6 +43,8 @@ void WrapperUdpLed::handle(void) {
       handleProtocolFragment(bytes);
     } else if (_udpProtocol == UDP_TPM2) {
       handleProtocolTPM2(bytes);
+    } else { //Fallback
+      handleProtocolRaw(bytes);
     }
   }
 }
@@ -133,5 +135,3 @@ void WrapperUdpLed::refreshLeds(void) {
     refreshLedsPointer();
   }
 }
-
-

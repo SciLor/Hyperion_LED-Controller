@@ -29,7 +29,7 @@ void Config::initConfig(void) {
       _cfgStruct.ports.udpLed = 19446;
       _cfgStruct.led.timeoutMs = 5000;
       _cfgStruct.led.autoswitch = true;
-      _cfgStruct.misc.udpProtocol = 0;
+      _cfgStruct.misc.udpProtocol = UDP_RAW;
       EEPROM.end();
       saveConfig();
       Log.info("Configuration at 0x%x with v%i (v%i expected), new configuration created", CONFIG_START_ADDRESS, version, CONFIG_ACTIVE_VERSION);
@@ -127,4 +127,3 @@ ConfigIP Config::ip2cfg(const byte ip[4]) {
   cfgIp.d = ip[3];
   return cfgIp;
 }
-

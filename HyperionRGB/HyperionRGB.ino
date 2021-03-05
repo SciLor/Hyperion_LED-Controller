@@ -33,7 +33,7 @@ WrapperJsonServer jsonServer;
 #endif
 
 Mode activeMode;
-boolean autoswitch;
+boolean autoswitch, initDone;
 
 ThreadController threadController = ThreadController();
 Thread statusThread = Thread();
@@ -86,7 +86,7 @@ void changeMode(Mode newMode, int interval = 0) {
         animationThread.setInterval(interval);
         break;
       case HYPERION_UDP:
-        if (!autoswitch)
+        if (!autoswitch && initDone)
           udpLed.begin();
     }
     if (interval > 0)
@@ -190,6 +190,7 @@ void handleEvents(void) {
 }
 
 void setup(void) {
+  initDone = false;
   LoggerInit loggerInit = LoggerInit(115200);
   
   initConfig();
@@ -239,6 +240,7 @@ void setup(void) {
 
   pinMode(LED, OUTPUT);   // LED pin as output.
   Log.info("HEAP=%i", ESP.getFreeHeap());
+  initDone = true;
 }
 
 void loop(void) {

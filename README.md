@@ -24,11 +24,11 @@ b) for esp32 https://github.com/espressif/arduino-esp32
 # Libraries
 a) ArduinoThread 2.1.1
 
-b) ArduinoJSON 6.17.2
+b) ArduinoJSON 6.18.0
 
-c) LinkedList 1.2.3
+c) LinkedList 1.3.2
 
-d) FastLED 3.3.3
+d) FastLED 3.4.0
 
 e) Logging https://github.com/SciLor/Arduino-logging-library - install manually: Download zip from github and install via Arduino IDE, Sketch -> Include Library -> Add .ZIP Library
 

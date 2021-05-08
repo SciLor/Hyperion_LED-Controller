@@ -53,11 +53,11 @@
 //const byte CONFIG_WIFI_SUBNET[] = {255, 255, 255, 0};
 //const byte CONFIG_WIFI_DNS[] = {192, 168, 0, 1};
 
-#define CONFIG_WIFI_HOSTNAME "ESP8266"
+#define CONFIG_WIFI_HOSTNAME "HyperionRGB"
 
 #define CONFIG_PORT_JSON_SERVER 19444
 #define CONFIG_PORT_UDP_LED 19446
 
 #define CONFIG_PROTOCOL_UDP UDP_RAW //UDP_RAW, UDP_FRAGMENT, UDP_TPM2 - Hyperion 0: RAW, 2: Fragmented, 3: TPM2 - Check the README
 
-#define CONFIG_OTA_PASSWORD "HyperionRGB"
+#define CONFIG_OTA_AP_PASSWORD "HyperionRGB"

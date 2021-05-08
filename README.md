@@ -48,6 +48,9 @@ f) ESP32 Webserver https://github.com/nhatuan84/esp32-webserver - install manual
 3. Open the `HyperionRGB.ino` the Arduino IDE
 4. Compile and upload to your board
 
+#### AP fallback
+HyperionRGB will try to connected to the saved WiFi for 3 times and then falls back into AP Mode for 60 seconds. It will open a new WiFi network with the standard name "HyperionRGB" and password "HyperionRGB"- The SSID/Password may be overriden via the static config. (hostname/password)
+
 #### UDP Protocol
 This section describes the different UDP Protocol formats.
 ##### RAW - Protocol 0 - Raw Format

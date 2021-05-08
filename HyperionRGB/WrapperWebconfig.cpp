@@ -6,26 +6,21 @@ void WrapperWebconfig::begin() {
   _server->begin();
 }
 
-void WrapperWebconfig::handle(void) {
+bool WrapperWebconfig::handle(void) {
   _server->handleClient();
+  bool handled = _handled;
+  _handled = false;
+  return handled;
 }
 
 void WrapperWebconfig::handleNotFound(void) {
-  String message = "File Not Found\n\n";
-  message += "URI: ";
-  message += _server->uri();
-  message += "\nMethod: ";
-  message += (_server->method() == HTTP_GET)?"GET":"POST";
-  message += "\nArguments: ";
-  message += _server->args();
-  message += "\n";
-  for (uint8_t i=0; i<_server->args(); i++){
-    message += " " + _server->argName(i) + ": " + _server->arg(i) + "\n";
-  }
-  _server->send(404, "text/plain", message);
+  _handled = true;
+  _server->sendHeader("Location", "/", true);
+  _server->send(302, "text/plain",""); 
 }
 
 void WrapperWebconfig::handleRoot(void) {
+  _handled = true;
   Log.debug("Webconfig started HEAP=%i", ESP.getFreeHeap());
   initHelperVars();
   Log.debug("Webconfig initialized HEAP=%i", ESP.getFreeHeap());

@@ -167,6 +167,7 @@ void initConfig(void) {
   uint16_t jsonServerPort;
   uint16_t udpLedPort;
   UdpProtocol udpProtocol;
+  uint16_t ledCount;
 
   #ifdef CONFIG_ENABLE_WEBCONFIG
     //TODO Fallback
@@ -182,6 +183,7 @@ void initConfig(void) {
     udpLedPort = cfg->ports.udpLed;
     udpProtocol = static_cast<UdpProtocol>(cfg->misc.udpProtocol);
     autoswitch = cfg->led.autoswitch;
+    ledCount = cfg->led.count;
     
     Log.info("CFG=%s", "EEPROM config loaded");
     Config::logConfig();
@@ -201,13 +203,14 @@ void initConfig(void) {
     udpLedPort = CONFIG_PORT_UDP_LED;
     udpProtocol = CONFIG_PROTOCOL_UDP;
     autoswitch = CONFIG_LED_HYPERION_AUTOSWITCH;
+    ledCount = CONFIG_LED_COUNT
     
     Log.info("CFG=%s", "Static config loaded");
   #endif
   
   wifi = WrapperWiFi(ssid, password, ip, subnet, dns, hostname);
-  udpLed = WrapperUdpLed(CONFIG_LED_COUNT, udpLedPort, udpProtocol);
-  jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, jsonServerPort);
+  udpLed = WrapperUdpLed(ledCount, udpLedPort, udpProtocol);
+  jsonServer = WrapperJsonServer(ledCount, jsonServerPort);
 }
 
 void handleEvents(void) {
@@ -248,7 +251,11 @@ void setup(void) {
   resetThread.enabled = false;
   threadController.add(&resetThread);
   
-  ledStrip.begin();
+  #ifdef CONFIG_ENABLE_WEBCONFIG
+    ledStrip.begin(Config::getConfig()->led.count);
+  #else
+    ledStrip.begin(CONFIG_LED_COUNT);
+  #endif
   resetMode();
   animationStep();
 

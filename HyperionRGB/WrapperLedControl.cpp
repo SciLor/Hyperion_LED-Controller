@@ -1,18 +1,19 @@
 #include "WrapperLedControl.h"
 
-void WrapperLedControl::begin() {
+void WrapperLedControl::begin(uint16_t ledCount) {
+  _ledCount = ledCount;
+
   #ifdef CONFIG_LED_CLOCKLESS_CHIPSET
-    Log.debug("Chipset=%s, dataPin=%i, clockPin=%s, colorOrder=%i, ledCount=%i", "Clockless", CONFIG_LED_DATAPIN, "NONE", CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
+    Log.debug("Chipset=%s, dataPin=%i, clockPin=%s, colorOrder=%i, ledCount=%i", "Clockless", CONFIG_LED_DATAPIN, "NONE", CONFIG_LED_COLOR_ORDER, ledCount);
   #elif defined CONFIG_LED_PWM
     Log.debug("Chipset=%s, redPin=%i, greenPin=%i, bluePin=%i, ledCount=%i", "PWM", CONFIG_LED_PWM_RED, CONFIG_LED_PWM_GREEN, CONFIG_LED_PWM_BLUE, CONFIG_LED_COUNT);
     #if CONFIG_LED_COUNT != 1
       #error "PWM only supports LED count set to one (even if you have multiple LEDs on your strip, they will all show the same color)"
     #endif
   #else
-    Log.debug("Chipset=%i, dataPin=%i, clockPin=%i, colorOrder=%i, ledCount=%i", CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER, CONFIG_LED_COUNT);
+    Log.debug("Chipset=%i, dataPin=%i, clockPin=%i, colorOrder=%i, ledCount=%i", CONFIG_LED_SPI_CHIPSET, CONFIG_LED_DATAPIN, CONFIG_LED_CLOCKPIN, CONFIG_LED_COLOR_ORDER, _ledCount);
   #endif
   
-  _ledCount = CONFIG_LED_COUNT;
   leds = new CRGB[_ledCount];
   _fire2012Heat = new byte[_ledCount];
   

@@ -29,6 +29,7 @@ void Config::initConfig(void) {
       _cfgStruct.ports.udpLed = 19446;
       _cfgStruct.led.timeoutMs = 5000;
       _cfgStruct.led.autoswitch = true;
+      _cfgStruct.led.count = 1;
       _cfgStruct.misc.udpProtocol = UDP_RAW;
       EEPROM.end();
       saveConfig();
@@ -73,6 +74,7 @@ void Config::loadStaticConfig(void) {
   _cfgStruct.led.idleMode = CONFIG_LED_STANDARD_MODE;
   _cfgStruct.led.timeoutMs = CONFIG_LED_STANDARD_MODE_TIMEOUT_MS; 
   _cfgStruct.led.autoswitch = CONFIG_LED_HYPERION_AUTOSWITCH;
+  _cfgStruct.led.count = CONFIG_LED_COUNT;
 
   _cfgStruct.ports.jsonServer = CONFIG_PORT_JSON_SERVER;
   _cfgStruct.ports.udpLed = CONFIG_PORT_UDP_LED;
@@ -99,11 +101,14 @@ void Config::logConfig(void) {
   Log.debug("  idleMode=%i", _cfgStruct.led.idleMode);
   Log.debug("  timeoutMs=%i", _cfgStruct.led.timeoutMs);
   Log.debug("  autoswitch=%i", _cfgStruct.led.autoswitch);
-  Log.debug("  udpProtocol=%i", _cfgStruct.misc.udpProtocol);
+  Log.debug("  count=%i", _cfgStruct.led.count);
 
   Log.debug("+PORTS+");
   Log.debug("  jsonServer=%i", _cfgStruct.ports.jsonServer);
   Log.debug("  udpLed=%i", _cfgStruct.ports.udpLed);
+
+  Log.debug("+MISC+");
+  Log.debug("  udpProtocol=%i", _cfgStruct.misc.udpProtocol);
   
 }
 

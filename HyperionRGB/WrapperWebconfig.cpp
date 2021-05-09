@@ -134,6 +134,13 @@ void WrapperWebconfig::changeConfig(void) {
       } else {
         cfg->led.autoswitch = false;
       }
+    } else if (argName == "led-count") {
+      uint16_t val = argValue.toInt();
+      if (val > 0) {
+        cfg->led.count = val;
+      } else {
+        cfg->led.count = 1;
+      }
     } else if (argName == "saveRestart") {
       restart = true;
     } else if (argName == "loadStatic") {
@@ -322,6 +329,7 @@ String WrapperWebconfig::config(void) {
     _udpProtocols = new LinkedList<SelectEntryBase*>();
     getIdleModes(cfg->led.idleMode, _idleModes);
     getUdpProtocols(cfg->misc.udpProtocol, _udpProtocols);
+    groupContent += textTemplate("LED Count", "",  "led-count", escape(cfg->led.count), "1", 5);
     groupContent += selectTemplate("LED Idle Mode", "", "led-idleMode", _idleModes);
     groupContent += checkboxTemplate("Autoswitch to Hyperion_UDP/Idle Mode", "Automatically switch to Hyperion_UDP when UDP Data arriving and switch back to idle mode after timeout", "led-autoswitch", cfg->led.autoswitch);
     groupContent += textTemplate("Timeout Fallback in MS", "Switches back to Idle Mode after x milliseconds when no UDP data is arriving",  "led-timeoutMs", escape(cfg->led.timeoutMs), "5000", 10);

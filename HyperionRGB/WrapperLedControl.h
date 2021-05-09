@@ -8,7 +8,7 @@
 class WrapperLedControl {
   public:
     void
-      begin(),
+      begin(uint16_t ledCount),
       show(void),
       clear(void),
       fillSolid(CRGB color),
@@ -26,7 +26,7 @@ class WrapperLedControl {
     uint16_t _rainbowV2StepState;
     boolean _fire2012Direction;
     byte* _fire2012Heat;
-    int _ledCount;
+    uint16_t _ledCount;
 };
 
 #endif

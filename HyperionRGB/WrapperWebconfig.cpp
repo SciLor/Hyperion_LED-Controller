@@ -333,18 +333,14 @@ String WrapperWebconfig::config(void) {
     html += groupTemplate("Ports", groupContent);
     groupContent = "";
 
-    _idleModes = new LinkedList<SelectEntryBase*>();
-    _udpProtocols = new LinkedList<SelectEntryBase*>();
-    getIdleModes(cfg->led.idleMode, _idleModes);
-    getUdpProtocols(cfg->misc.udpProtocol, _udpProtocols);
+    initHelperVars();
     groupContent += textTemplate("LED Count", "",  "led-count", escape(cfg->led.count), "1", 5);
     groupContent += selectTemplate("LED Idle Mode", "", "led-idleMode", _idleModes);
     groupContent += textTemplate("LED Static color (hex)", "", "led-color", color2hex(cfg->led.color), "FFFFFF", 6);
     groupContent += checkboxTemplate("Autoswitch to Hyperion_UDP/Idle Mode", "Automatically switch to Hyperion_UDP when UDP Data arriving and switch back to idle mode after timeout", "led-autoswitch", cfg->led.autoswitch);
     groupContent += textTemplate("Timeout Fallback in MS", "Switches back to Idle Mode after x milliseconds when no UDP data is arriving",  "led-timeoutMs", escape(cfg->led.timeoutMs), "5000", 10);
     groupContent += selectTemplate("LED UDP Protocol", "", "led-udpProtocol", _udpProtocols);
-    clearLinkedList(_idleModes);
-    clearLinkedList(_udpProtocols);
+    clearHelperVars();
     
     html += groupTemplate("LEDs", groupContent);
     
@@ -390,7 +386,7 @@ void WrapperWebconfig::initHelperVars(void) {
   _idleModes = new LinkedList<SelectEntryBase*>();
   _udpProtocols = new LinkedList<SelectEntryBase*>();
   getIdleModes(cfg->led.idleMode, _idleModes);
-  getIdleModes(cfg->misc.udpProtocol, _udpProtocols);
+  getUdpProtocols(cfg->misc.udpProtocol, _udpProtocols);
 }
 void WrapperWebconfig::clearHelperVars(void) {
   clearLinkedList(_idleModes);
@@ -434,7 +430,7 @@ void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>
 }
 
 void WrapperWebconfig::getUdpProtocols(uint8_t active, LinkedList<SelectEntryBase*>* target) {
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 0 (Raw)", active == UDP_RAW, UDP_RAW));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 2 (Fragment)", active == UDP_FRAGMENT, UDP_FRAGMENT));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("0", "Protocol 3 (TPM2 Fragments)", active == UDP_TPM2, UDP_TPM2));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("P0", "Protocol 0 (Raw)", active == UDP_RAW, UDP_RAW));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("P2", "Protocol 2 (Fragment)", active == UDP_FRAGMENT, UDP_FRAGMENT));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("P3", "Protocol 3 (TPM2 Fragments)", active == UDP_TPM2, UDP_TPM2));
 }

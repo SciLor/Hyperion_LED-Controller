@@ -58,6 +58,11 @@ String WrapperWebconfig::escape(uint32_t text) {
   sprintf(buf, "%u", text);
   return String(buf);  
 }
+String WrapperWebconfig::color2hex(CRGB color) {
+  char buf[6];
+  sprintf(buf, "%02X%02X%02X", color.r, color.g, color.b);
+  return String(buf);  
+}
 String WrapperWebconfig::ipToString(ConfigIP ip) {
   char buf[16];
   if (ip.a == 0)
@@ -141,6 +146,9 @@ void WrapperWebconfig::changeConfig(void) {
       } else {
         cfg->led.count = 1;
       }
+    } else if (argName == "led-color") {
+      uint32_t val = strtol(argValue.c_str(), 0, 16);
+      cfg->led.color = CRGB(val);
     } else if (argName == "saveRestart") {
       restart = true;
     } else if (argName == "loadStatic") {
@@ -331,6 +339,7 @@ String WrapperWebconfig::config(void) {
     getUdpProtocols(cfg->misc.udpProtocol, _udpProtocols);
     groupContent += textTemplate("LED Count", "",  "led-count", escape(cfg->led.count), "1", 5);
     groupContent += selectTemplate("LED Idle Mode", "", "led-idleMode", _idleModes);
+    groupContent += textTemplate("LED Static color (hex)", "", "led-color", color2hex(cfg->led.color), "FFFFFF", 6);
     groupContent += checkboxTemplate("Autoswitch to Hyperion_UDP/Idle Mode", "Automatically switch to Hyperion_UDP when UDP Data arriving and switch back to idle mode after timeout", "led-autoswitch", cfg->led.autoswitch);
     groupContent += textTemplate("Timeout Fallback in MS", "Switches back to Idle Mode after x milliseconds when no UDP data is arriving",  "led-timeoutMs", escape(cfg->led.timeoutMs), "5000", 10);
     groupContent += selectTemplate("LED UDP Protocol", "", "led-udpProtocol", _udpProtocols);

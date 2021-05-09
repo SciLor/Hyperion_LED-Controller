@@ -84,9 +84,7 @@ void changeMode(Mode newMode, int interval = 0) {
         ledStrip.show();
         break;
       case STATIC_COLOR:
-        #ifdef CONFIG_LED_STATIC_COLOR
-          ledStrip.fillSolid(CONFIG_LED_STATIC_COLOR);
-        #endif
+        ledStrip.fillSolid(static_cast<CRGB>(Config::getConfig()->led.color));
         break;
       case RAINBOW:
       case RAINBOW_V2:

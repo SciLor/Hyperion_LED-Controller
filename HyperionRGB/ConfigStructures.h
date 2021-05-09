@@ -4,6 +4,8 @@
 #define CONFIG_START_ADDRESS 0
 #define CONFIG_ACTIVE_VERSION 3
 
+#include <FastLED.h>
+
 typedef struct {
   uint8_t a;
   uint8_t b;
@@ -31,7 +33,8 @@ typedef struct {
   uint32_t timeoutMs;
   boolean autoswitch;
   uint16_t count;
-  char spacer[57];
+  CRGB color;
+  char spacer[54];
 } ConfigLed;
 
 typedef struct {

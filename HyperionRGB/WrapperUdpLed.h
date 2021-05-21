@@ -26,6 +26,7 @@ class WrapperUdpLed {
     byte* _udpBuffer;
     uint16_t _bufferSize;
     boolean _opened;
+    uint16_t _tpm2LedId;
 
     void 
       updateLed(int id, byte r, byte g, byte b),

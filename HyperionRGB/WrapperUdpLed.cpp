@@ -99,7 +99,7 @@ void WrapperUdpLed::handleProtocolTPM2(int bytes) {
   /// 5: Fragment ID maximum
   /// 6: {0: R, 1: G, 2: B}
   /// 7: 0x36
-  if (bytes > 7) {
+  if (bytes > 7 && bytes-7 <= _bufferSize) {
     _udp.readBytes(_udpBuffer, 5);
     Log.verbose("Magic byte: %X, Frame type: %X", _udpBuffer[0], _udpBuffer[1]);
     
@@ -109,13 +109,36 @@ void WrapperUdpLed::handleProtocolTPM2(int bytes) {
       int ledCount = dataLength / 3;
       byte fragmentId = _udpBuffer[4];
       byte fragmentMax = _udpBuffer[5];
-      Log.debug("Data length: %i, LED count: %i, Fragment ID: %i, Fragment Maximum: %i", dataLength, ledCount, fragmentId, fragmentMax);
-  
+      Log.verbose("Data length: %i, LED count: %i, Fragment ID: %i, Fragment Maximum: %i", dataLength, ledCount, fragmentId, fragmentMax);
+      size_t len = _udp.readBytes(_udpBuffer, bytes - 5);
+      if (_udpBuffer[len-1] == 0x36) {
+        if (fragmentMax == 1) {
+          for (int i=0; i<ledCount; i++) {
+            updateLed(i, _udpBuffer[i * 3 + 0], _udpBuffer[i * 3 + 1], _udpBuffer[i * 3 + 2]);
+            refreshLeds();
+          }
+        } else {
+          if (fragmentId == 0) 
+            _tpm2LedId = 0;
+          if (_tpm2LedId + ledCount <= _ledCount) {
+            for (int i=0; i<ledCount-_tpm2LedId; i++) {
+              updateLed(i+_tpm2LedId, _udpBuffer[i * 3 + 0], _udpBuffer[i * 3 + 1], _udpBuffer[i * 3 + 2]);
+            }
+            _tpm2LedId += ledCount;
+            if (fragmentMax == fragmentId)
+              refreshLeds();
+          } else {
+            Log.error("Cannot address more leds than configured for protocol 3");
+          }
+        }
+      } else {
+        Log.error("Invalid packet structure, magic byte 0x36 at data end for protocol 3 not found.");
+      }   
     } else {
-      Log.debug("Invalid packet structure, magic bytes for protocol 3 not found.");
+      Log.error("Invalid packet structure, magic bytes for protocol 3 not found.");
     }
   } else {
-    Log.debug("Packet size too small for protocol 3, size=%i", bytes);
+    Log.error("Packet size too small for protocol 3, size=%i", bytes);
   }
 }
 void WrapperUdpLed::onUpdateLed(void(* function) (int, byte, byte, byte)) {

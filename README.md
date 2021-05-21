@@ -37,6 +37,8 @@ f) ESP32 Webserver https://github.com/nhatuan84/esp32-webserver - install manual
 ## Installation
 
 ### Configuration of the board
+Attention, enabling Logging can slowdown the leds responsiveness!
+
 #### Basic
 1. Go to the `HyperionRGB` folder and create a copy of `ConfigStatic.h.example`. Remove the `.example` suffix
 2. Configure the `ConfigStatic.h` for your needs:

@@ -68,26 +68,26 @@ void WrapperUdpLed::handleProtocolFragment(int bytes) {
   /// 1: Fragment ?!
   /// 2: First LED ID, high byte / 3: First LED ID, low byte --> int16_t?
   /// 4: {0: R, 1: G, 2: B}
-  if (bytes > 4) {
+  if (bytes > 4 && bytes-4 <= _bufferSize) {
     _udp.readBytes(_udpBuffer, 4);
     
     byte updateId = _udpBuffer[0] & 0x0F;
     byte fragment = _udpBuffer[1];
     int ledIdStart = 256 * _udpBuffer[2] + _udpBuffer[3]; //Multiply high byte
     int ledIdEnd = ledIdStart + (bytes - 4) / 3;
-  
+    
     Log.verbose("updateId: %X, fragment: %X, ledIdStart: %i, ledIdEnd: %i", updateId, fragment, ledIdStart, ledIdEnd);
     if (ledIdEnd <= _ledCount) {
       _udp.readBytes(_udpBuffer, bytes - 4);
-      for (int i = ledIdStart; i < ledIdEnd; i++) {
-        updateLed(i, _udpBuffer[i * 3 + 0], _udpBuffer[i * 3 + 1], _udpBuffer[i * 3 + 2]);
+      for (int i=0; i<ledIdEnd-ledIdStart; i++) {
+        updateLed(ledIdStart+i, _udpBuffer[i * 3 + 0], _udpBuffer[i * 3 + 1], _udpBuffer[i * 3 + 2]);
       }
       refreshLeds();
     } else {
-      Log.debug("Too many LEDs: expected=%i, actual=%i", _ledCount, ledIdEnd);
+      Log.error("Too many LEDs: expected=%i, actual=%i", _ledCount, ledIdEnd);
     }
   } else {
-    Log.debug("Packet size too small for protocol 2, size=%i", bytes);
+    Log.error("Packet size too small or to big for protocol 2, size=%i", bytes);
   }
 }
 void WrapperUdpLed::handleProtocolTPM2(int bytes) {

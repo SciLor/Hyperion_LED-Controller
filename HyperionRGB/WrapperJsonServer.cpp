@@ -43,15 +43,18 @@ void WrapperJsonServer::handleConnection(boolean newClient) {
 void WrapperJsonServer::readData(void) {
   String data = _tcpClient.readStringUntil('\n');
   Log.debug("Received data: %s", data.c_str());
-  StaticJsonBuffer<TCP_BUFFER> jsonBuffer;
-  JsonObject& root = jsonBuffer.parseObject(data.c_str());
-  if (root.success()) {
-    String command = root["command"].asString();
+  StaticJsonDocument<TCP_BUFFER> doc;
+  deserializeJson(doc, data.c_str());
+  if (!doc.isNull()) {
+    JsonObject root = doc.as<JsonObject>();
+    String command = root["command"];
     if (command.equals("serverinfo")) {
       Log.info("serverinfo");     
       _tcpClient.print("{\"info\":{\"effects\":["
           "{\"args\":{\"speed\":1.0},\"name\":\"Hyperion UDP\",\"script\":\"hyperion_udp\"},"
-          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow mood\",\"script\":\"rainbow\"},"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow swirl\",\"script\":\"rainbow\"},"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow swirl v2\",\"script\":\"rainbow_v2\"},"
+          "{\"args\":{\"speed\":2.0},\"name\":\"Rainbow full\",\"script\":\"rainbow_full\"},"
           "{\"args\":{\"speed\":62.5},\"name\":\"Fire2012\",\"script\":\"fire2012\"}"
         "],"
         "\"activeLedColor\":[{\"RGB Value\":[");
@@ -82,7 +85,7 @@ void WrapperJsonServer::readData(void) {
       clearCmd();
       _tcpClient.println("{\"success\":true}");
     } else if (command.equals("effect")) {
-      String effect = root["effect"]["name"].asString();
+      String effect = root["effect"]["name"];
       double effectSpeed = root["effect"]["args"]["speed"];
       int interval = 0;
       if (effectSpeed > 0) {
@@ -91,8 +94,12 @@ void WrapperJsonServer::readData(void) {
       
       if (effect.equals("Hyperion UDP")) {
         effectChange(HYPERION_UDP);
-      } else if (effect.equals("Rainbow mood")) {
+      } else if (effect.equals("Rainbow swirl")) {
         effectChange(RAINBOW, interval);
+      } else if (effect.equals("Rainbow swirl v2")) {
+        effectChange(RAINBOW_V2, interval);
+      } else if (effect.equals("Rainbow full")) {
+        effectChange(RAINBOW_FULL, interval);
       } else if (effect.equals("Fire2012")) {
         effectChange(FIRE2012, interval);
       }
@@ -137,4 +144,3 @@ void WrapperJsonServer::effectChange(Mode effect, int interval/* = 0*/) {
     effectChangePointer(effect, interval);
   }
 }
-

@@ -4,6 +4,8 @@
 #define CONFIG_START_ADDRESS 0
 #define CONFIG_ACTIVE_VERSION 3
 
+#include <FastLED.h>
+
 typedef struct {
   uint8_t a;
   uint8_t b;
@@ -30,8 +32,9 @@ typedef struct {
   uint8_t idleMode;
   uint32_t timeoutMs;
   boolean autoswitch;
-
-  char spacer[59];
+  uint16_t count;
+  CRGB color;
+  char spacer[54];
 } ConfigLed;
 
 typedef struct {
@@ -42,10 +45,17 @@ typedef struct {
 } ConfigPort;
 
 typedef struct {
+  uint8_t udpProtocol;
+  
+  char spacer[63];
+} ConfigMisc;
+
+typedef struct {
   uint8_t version;
   ConfigWifi wifi;
   ConfigLed led;
   ConfigPort ports;
+  ConfigMisc misc;
 } ConfigStruct;
 
 #endif

@@ -6,26 +6,21 @@ void WrapperWebconfig::begin() {
   _server->begin();
 }
 
-void WrapperWebconfig::handle(void) {
+bool WrapperWebconfig::handle(void) {
   _server->handleClient();
+  bool handled = _handled;
+  _handled = false;
+  return handled;
 }
 
 void WrapperWebconfig::handleNotFound(void) {
-  String message = "File Not Found\n\n";
-  message += "URI: ";
-  message += _server->uri();
-  message += "\nMethod: ";
-  message += (_server->method() == HTTP_GET)?"GET":"POST";
-  message += "\nArguments: ";
-  message += _server->args();
-  message += "\n";
-  for (uint8_t i=0; i<_server->args(); i++){
-    message += " " + _server->argName(i) + ": " + _server->arg(i) + "\n";
-  }
-  _server->send(404, "text/plain", message);
+  _handled = true;
+  _server->sendHeader("Location", "/", true);
+  _server->send(302, "text/plain",""); 
 }
 
 void WrapperWebconfig::handleRoot(void) {
+  _handled = true;
   Log.debug("Webconfig started HEAP=%i", ESP.getFreeHeap());
   initHelperVars();
   Log.debug("Webconfig initialized HEAP=%i", ESP.getFreeHeap());
@@ -61,6 +56,11 @@ String WrapperWebconfig::escape(uint16_t text) {
 String WrapperWebconfig::escape(uint32_t text) {
   char buf[10];
   sprintf(buf, "%u", text);
+  return String(buf);  
+}
+String WrapperWebconfig::color2hex(CRGB color) {
+  char buf[6];
+  sprintf(buf, "%02X%02X%02X", color.r, color.g, color.b);
   return String(buf);  
 }
 String WrapperWebconfig::ipToString(ConfigIP ip) {
@@ -120,6 +120,8 @@ void WrapperWebconfig::changeConfig(void) {
         cfg->ports.udpLed = 19446;
     } else if (argName == "led-idleMode") {
       cfg->led.idleMode = getSelectedEntry<uint8_t>(argValue, _idleModes);
+    } else if (argName == "led-udpProtocol") {
+      cfg->misc.udpProtocol = getSelectedEntry<uint8_t>(argValue, _udpProtocols);
     } else if (argName == "led-timeoutMs") {
       if (argValue.equals("0")) {
         cfg->led.timeoutMs = 0;
@@ -137,6 +139,16 @@ void WrapperWebconfig::changeConfig(void) {
       } else {
         cfg->led.autoswitch = false;
       }
+    } else if (argName == "led-count") {
+      uint16_t val = argValue.toInt();
+      if (val > 0) {
+        cfg->led.count = val;
+      } else {
+        cfg->led.count = 1;
+      }
+    } else if (argName == "led-color") {
+      uint32_t val = strtol(argValue.c_str(), 0, 16);
+      cfg->led.color = CRGB(val);
     } else if (argName == "saveRestart") {
       restart = true;
     } else if (argName == "loadStatic") {
@@ -321,12 +333,14 @@ String WrapperWebconfig::config(void) {
     html += groupTemplate("Ports", groupContent);
     groupContent = "";
 
-    _idleModes = new LinkedList<SelectEntryBase*>();
-    getIdleModes(cfg->led.idleMode, _idleModes);
+    initHelperVars();
+    groupContent += textTemplate("LED Count", "",  "led-count", escape(cfg->led.count), "1", 5);
     groupContent += selectTemplate("LED Idle Mode", "", "led-idleMode", _idleModes);
+    groupContent += textTemplate("LED Static color (hex)", "", "led-color", color2hex(cfg->led.color), "FFFFFF", 6);
     groupContent += checkboxTemplate("Autoswitch to Hyperion_UDP/Idle Mode", "Automatically switch to Hyperion_UDP when UDP Data arriving and switch back to idle mode after timeout", "led-autoswitch", cfg->led.autoswitch);
     groupContent += textTemplate("Timeout Fallback in MS", "Switches back to Idle Mode after x milliseconds when no UDP data is arriving",  "led-timeoutMs", escape(cfg->led.timeoutMs), "5000", 10);
-    clearLinkedList(_idleModes);
+    groupContent += selectTemplate("LED UDP Protocol", "", "led-udpProtocol", _udpProtocols);
+    clearHelperVars();
     
     html += groupTemplate("LEDs", groupContent);
     
@@ -370,10 +384,13 @@ void WrapperWebconfig::initHelperVars(void) {
   ConfigStruct *cfg = Config::getConfig();
   
   _idleModes = new LinkedList<SelectEntryBase*>();
+  _udpProtocols = new LinkedList<SelectEntryBase*>();
   getIdleModes(cfg->led.idleMode, _idleModes);
+  getUdpProtocols(cfg->misc.udpProtocol, _udpProtocols);
 }
 void WrapperWebconfig::clearHelperVars(void) {
   clearLinkedList(_idleModes);
+  clearLinkedList(_udpProtocols);
 }
 void WrapperWebconfig::clearLinkedList(LinkedList<SelectEntryBase*>* target) {
   Log.debug("Clearing LinkedList HEAP=%i", ESP.getFreeHeap());
@@ -406,6 +423,14 @@ void WrapperWebconfig::getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Off", "Off", active == OFF, OFF));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Hyperion", "Hyperion UDP", active == HYPERION_UDP, HYPERION_UDP));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Static", "Static color", active == STATIC_COLOR, STATIC_COLOR));
-  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Rainbow", "Rainbow", active == RAINBOW, RAINBOW));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Rainbow", "Rainbow swirl", active == RAINBOW, RAINBOW));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("RainbowV2", "Rainbow swirl v2", active == RAINBOW_V2, RAINBOW_V2));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("RainbowFull", "Rainbow full", active == RAINBOW_FULL, RAINBOW_FULL));
   target->add((SelectEntryBase*) new SelectEntry<uint8_t>("Fire2012", "Fire2012", active == FIRE2012, FIRE2012));
+}
+
+void WrapperWebconfig::getUdpProtocols(uint8_t active, LinkedList<SelectEntryBase*>* target) {
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("P0", "Protocol 0 (Raw)", active == UDP_RAW, UDP_RAW));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("P2", "Protocol 2 (Fragment)", active == UDP_FRAGMENT, UDP_FRAGMENT));
+  target->add((SelectEntryBase*) new SelectEntry<uint8_t>("P3", "Protocol 3 (TPM2 Fragments)", active == UDP_TPM2, UDP_TPM2));
 }

@@ -29,6 +29,9 @@ void Config::initConfig(void) {
       _cfgStruct.ports.udpLed = 19446;
       _cfgStruct.led.timeoutMs = 5000;
       _cfgStruct.led.autoswitch = true;
+      _cfgStruct.led.count = 1;
+      _cfgStruct.led.color = CRGB(254, 254, 254);
+      _cfgStruct.misc.udpProtocol = UDP_RAW;
       EEPROM.end();
       saveConfig();
       Log.info("Configuration at 0x%x with v%i (v%i expected), new configuration created", CONFIG_START_ADDRESS, version, CONFIG_ACTIVE_VERSION);
@@ -72,9 +75,13 @@ void Config::loadStaticConfig(void) {
   _cfgStruct.led.idleMode = CONFIG_LED_STANDARD_MODE;
   _cfgStruct.led.timeoutMs = CONFIG_LED_STANDARD_MODE_TIMEOUT_MS; 
   _cfgStruct.led.autoswitch = CONFIG_LED_HYPERION_AUTOSWITCH;
+  _cfgStruct.led.count = CONFIG_LED_COUNT;
+  _cfgStruct.led.color = CONFIG_LED_STATIC_COLOR;
 
   _cfgStruct.ports.jsonServer = CONFIG_PORT_JSON_SERVER;
   _cfgStruct.ports.udpLed = CONFIG_PORT_UDP_LED;
+
+  _cfgStruct.misc.udpProtocol = CONFIG_PROTOCOL_UDP;
 
   saveConfig();
   Log.info("CFG=%s", "loadStaticConfig END");
@@ -96,10 +103,17 @@ void Config::logConfig(void) {
   Log.debug("  idleMode=%i", _cfgStruct.led.idleMode);
   Log.debug("  timeoutMs=%i", _cfgStruct.led.timeoutMs);
   Log.debug("  autoswitch=%i", _cfgStruct.led.autoswitch);
+  Log.debug("  count=%i", _cfgStruct.led.count);
+  Log.debug("  static-color.r=%i", _cfgStruct.led.color.r);
+  Log.debug("  static-color.g=%i", _cfgStruct.led.color.g);
+  Log.debug("  static-color.b=%i", _cfgStruct.led.color.b);
 
   Log.debug("+PORTS+");
   Log.debug("  jsonServer=%i", _cfgStruct.ports.jsonServer);
   Log.debug("  udpLed=%i", _cfgStruct.ports.udpLed);
+
+  Log.debug("+MISC+");
+  Log.debug("  udpProtocol=%i", _cfgStruct.misc.udpProtocol);
   
 }
 
@@ -123,4 +137,3 @@ ConfigIP Config::ip2cfg(const byte ip[4]) {
   cfgIp.d = ip[3];
   return cfgIp;
 }
-

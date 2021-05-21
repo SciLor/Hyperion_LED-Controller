@@ -11,7 +11,7 @@ void WrapperOTA::begin(const char* hostname) {
   ArduinoOTA.setHostname(hostname);
 
   // No authentication by default
-  // ArduinoOTA.setPassword((const char *)"schnulli");
+  ArduinoOTA.setPassword((const char *)CONFIG_OTA_AP_PASSWORD);
 
   ArduinoOTA.onStart([]() {
     Log.info("Start OTA Update");
@@ -36,4 +36,3 @@ void WrapperOTA::begin(const char* hostname) {
 void WrapperOTA::handle(void) {
   ArduinoOTA.handle();
 }
-

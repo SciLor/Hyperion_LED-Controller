@@ -14,6 +14,7 @@
 #include "WrapperJsonServer.h"
 
 #include "WrapperWebconfig.h"
+#include <DNSServer.h>
 
 #define LED LED_BUILTIN // LED in NodeMCU at pin GPIO16 (D0) or LED_BUILTIN @Lolin32.
 int ledState = LOW;
@@ -32,13 +33,16 @@ WrapperJsonServer jsonServer;
   WrapperWebconfig webServer;
 #endif
 
-Mode activeMode;
+Mode activeMode = MODE_NONE;
 boolean autoswitch;
 
 ThreadController threadController = ThreadController();
 Thread statusThread = Thread();
 EnhancedThread animationThread = EnhancedThread();
 EnhancedThread resetThread = EnhancedThread();
+EnhancedThread apThread = EnhancedThread();
+
+DNSServer dnsServer;
 
 void statusInfo(void) {
   if (ledState == LOW) {
@@ -58,6 +62,12 @@ void animationStep() {
     case FIRE2012:
       ledStrip.fire2012Step();
       break;
+    case RAINBOW_V2:
+      ledStrip.rainbowV2Step();
+      break;
+    case RAINBOW_FULL:
+      ledStrip.rainbowFullStep();
+      break;
   }
 }
 
@@ -74,8 +84,11 @@ void changeMode(Mode newMode, int interval = 0) {
         ledStrip.show();
         break;
       case STATIC_COLOR:
+        ledStrip.fillSolid(static_cast<CRGB>(Config::getConfig()->led.color));
         break;
       case RAINBOW:
+      case RAINBOW_V2:
+      case RAINBOW_FULL:
         if (interval == 0)
           interval = 500;
         animationThread.setInterval(interval);
@@ -127,6 +140,17 @@ void resetMode(void) {
   resetThread.enabled = false;
 }
 
+void resetApIdle(void) {
+  if (wifi.isAPConnected()) {
+    Log.info("AP is used, keeping it alive...");
+    apThread.reset();
+  } else {
+    Log.error("Restarting because nobody connected via ap...");
+    delay(1000);
+    ESP.restart();
+  }
+}
+
 void initConfig(void) {
   #if defined(CONFIG_OVERWRITE_WEBCONFIG) && defined(CONFIG_ENABLE_WEBCONFIG)
     Config::loadStaticConfig();
@@ -134,11 +158,14 @@ void initConfig(void) {
 
   const char* ssid;
   const char* password;
+  const char* hostname;
   const byte* ip;
   const byte* subnet;
   const byte* dns;
   uint16_t jsonServerPort;
   uint16_t udpLedPort;
+  UdpProtocol udpProtocol;
+  uint16_t ledCount;
 
   #ifdef CONFIG_ENABLE_WEBCONFIG
     //TODO Fallback
@@ -146,18 +173,22 @@ void initConfig(void) {
     
     ssid = cfg->wifi.ssid;
     password = cfg->wifi.password;
+    hostname = cfg->wifi.hostname;
     ip = Config::cfg2ip(cfg->wifi.ip);
     subnet = Config::cfg2ip(cfg->wifi.subnet);
     dns = Config::cfg2ip(cfg->wifi.dns);
     jsonServerPort = cfg->ports.jsonServer;
     udpLedPort = cfg->ports.udpLed;
+    udpProtocol = static_cast<UdpProtocol>(cfg->misc.udpProtocol);
     autoswitch = cfg->led.autoswitch;
+    ledCount = cfg->led.count;
     
     Log.info("CFG=%s", "EEPROM config loaded");
     Config::logConfig();
   #else
     ssid = CONFIG_WIFI_SSID;
     password = CONFIG_WIFI_PASSWORD;
+    hostname = CONFIG_WIFI_HOSTNAME;
     #ifdef CONFIG_WIFI_STATIC_IP
       ip = CONFIG_WIFI_IP;
       subnet = CONFIG_WIFI_SUBNET;
@@ -168,14 +199,16 @@ void initConfig(void) {
     #endif
     jsonServerPort = CONFIG_PORT_JSON_SERVER;
     udpLedPort = CONFIG_PORT_UDP_LED;
+    udpProtocol = CONFIG_PROTOCOL_UDP;
     autoswitch = CONFIG_LED_HYPERION_AUTOSWITCH;
+    ledCount = CONFIG_LED_COUNT
     
     Log.info("CFG=%s", "Static config loaded");
   #endif
   
-  wifi = WrapperWiFi(ssid, password, ip, subnet, dns);
-  udpLed = WrapperUdpLed(CONFIG_LED_COUNT, udpLedPort);
-  jsonServer = WrapperJsonServer(CONFIG_LED_COUNT, jsonServerPort);
+  wifi = WrapperWiFi(ssid, password, ip, subnet, dns, hostname);
+  udpLed = WrapperUdpLed(ledCount, udpLedPort, udpProtocol);
+  jsonServer = WrapperJsonServer(ledCount, jsonServerPort);
 }
 
 void handleEvents(void) {
@@ -183,7 +216,11 @@ void handleEvents(void) {
   udpLed.handle();
   jsonServer.handle();
   #ifdef CONFIG_ENABLE_WEBCONFIG
-    webServer.handle();
+    if (wifi.isAP())
+      dnsServer.processNextRequest();
+    if (webServer.handle() && wifi.isAPConnected()) {
+      apThread.reset();
+    }
   #endif
 
   threadController.run();
@@ -212,11 +249,26 @@ void setup(void) {
   resetThread.enabled = false;
   threadController.add(&resetThread);
   
-  ledStrip.begin();
+  #ifdef CONFIG_ENABLE_WEBCONFIG
+    ledStrip.begin(Config::getConfig()->led.count);
+  #else
+    ledStrip.begin(CONFIG_LED_COUNT);
+  #endif
   resetMode();
   animationStep();
 
   wifi.begin();
+  if (wifi.isAP()) {
+    apThread.onRun(resetApIdle);
+    apThread.setInterval(60*1000);
+    apThread.reset();
+    threadController.add(&apThread);
+
+    dnsServer.start(53, "*", IPAddress(192, 168, 4, 1)); //Port 53 - standard port
+
+  } else {
+    apThread.enabled = false;
+  }
 
   #ifdef CONFIG_ENABLE_WEBCONFIG
     webServer = WrapperWebconfig();
@@ -246,6 +298,8 @@ void loop(void) {
   switch (activeMode) {
     case RAINBOW:
     case FIRE2012:
+    case RAINBOW_V2:
+    case RAINBOW_FULL:
       animationThread.runIfNeeded();
       break;
     case STATIC_COLOR:

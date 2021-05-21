@@ -44,8 +44,8 @@ class SelectEntry : public SelectEntryBase {
 class WrapperWebconfig {  
   public:
     void
-      begin(),
-      handle(void);
+      begin(); 
+    bool handle(void);
   private:
     void
       handleNotFound(void),
@@ -59,6 +59,7 @@ class WrapperWebconfig {
       escape(uint8_t text),
       escape(uint16_t text),
       escape(uint32_t text),
+      color2hex(CRGB color),
       ipToString(ConfigIP ip),
       
       htmlTemplate(String title, String content),
@@ -73,18 +74,21 @@ class WrapperWebconfig {
       initHelperVars(void),
       clearHelperVars(void),
       clearLinkedList(LinkedList<SelectEntryBase*>* target),
-      getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target);
+      getIdleModes(uint8_t active, LinkedList<SelectEntryBase*>* target),
+      getUdpProtocols(uint8_t active, LinkedList<SelectEntryBase*>* target);
 
     template<typename T>
     T getSelectedEntry(String selectedEntryValue, LinkedList<SelectEntryBase*>* target);
     
     LinkedList<SelectEntryBase*>* _idleModes;
-
+    LinkedList<SelectEntryBase*>* _udpProtocols;
+    
     #if defined(ESP8266)
       ESP8266WebServer* _server = new ESP8266WebServer(80);
     #elif defined(ESP32)
       ESP32WebServer* _server = new ESP32WebServer(80);
     #endif
+    bool _handled;
 };
 
 #endif

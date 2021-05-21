@@ -33,7 +33,7 @@ WrapperJsonServer jsonServer;
   WrapperWebconfig webServer;
 #endif
 
-Mode activeMode;
+Mode activeMode = MODE_NONE;
 boolean autoswitch;
 
 ThreadController threadController = ThreadController();

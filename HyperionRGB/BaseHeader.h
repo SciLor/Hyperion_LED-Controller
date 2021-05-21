@@ -12,7 +12,7 @@
     typeof (Y) y_ = (Y);          \
     (x_ < y_) ? x_ : y_; })*/
 
-enum Mode { OFF, HYPERION_UDP, STATIC_COLOR, RAINBOW, FIRE2012, RAINBOW_V2, RAINBOW_FULL };
+enum Mode { OFF, HYPERION_UDP, STATIC_COLOR, RAINBOW, FIRE2012, RAINBOW_V2, RAINBOW_FULL, MODE_NONE };
 enum UdpProtocol { UDP_RAW, UDP_FILLER, UDP_FRAGMENT, UDP_TPM2 };
 
 #endif

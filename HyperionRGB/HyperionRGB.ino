@@ -201,7 +201,7 @@ void initConfig(void) {
     udpLedPort = CONFIG_PORT_UDP_LED;
     udpProtocol = CONFIG_PROTOCOL_UDP;
     autoswitch = CONFIG_LED_HYPERION_AUTOSWITCH;
-    ledCount = CONFIG_LED_COUNT
+    ledCount = CONFIG_LED_COUNT;
     
     Log.info("CFG=%s", "Static config loaded");
   #endif

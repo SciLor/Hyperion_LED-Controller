@@ -1,7 +1,7 @@
 /*------------------------------------------------*/
 /*Configuration type*/
 
-//#define CONFIG_ENABLE_WEBCONFIG 1
+#define CONFIG_ENABLE_WEBCONFIG 1
 
 //Replaces all values in the webconfig with the ConfigStatic.h values when CONFIG_ENABLE_WEBCONFIG is enabled
 //#define CONFIG_OVERWRITE_WEBCONFIG 1
@@ -9,7 +9,7 @@
 /*------------------------------------------------*/
 /*Logging level*/
 
-#define LOGLEVEL LOG_LEVEL_INFOS
+//#define LOGLEVEL LOG_LEVEL_INFOS
 //#define LOGLEVEL LOG_LEVEL_DEBUG
 //#define LOGLEVEL LOG_LEVEL_VERBOSE
 

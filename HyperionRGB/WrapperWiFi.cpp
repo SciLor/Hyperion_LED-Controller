@@ -44,7 +44,7 @@ bool WrapperWiFi::connect(void) {
   return (WiFi.waitForConnectResult() == WL_CONNECTED);
 }
 void WrapperWiFi::begin(void) {
-  for (uint8 i=0; i<3; i++) {
+  for (uint8 i=0; i<5; i++) {
     if (connect()) {
       Log.info("Connected successfully, IP address: %s", WiFi.localIP().toString().c_str());
       _apMode = false;

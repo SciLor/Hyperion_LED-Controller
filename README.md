@@ -19,7 +19,7 @@ a) Arduino IDE 1.8.13
 ## Board Library
 a) esp8266 2.7.4 http://arduino.esp8266.com/stable/package_esp8266com_index.json
 
-b) for esp32 https://github.com/espressif/arduino-esp32
+b) for esp32 1.0.6 https://github.com/espressif/arduino-esp32
 
 # Libraries
 a) ArduinoThread 2.1.1

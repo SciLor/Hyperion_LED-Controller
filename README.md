@@ -1,3 +1,6 @@
+ARCHIVED, NO DEV!
+Please try WLED as replacement
+
 # Hyperion LED Controller for ESP8266/ESP32
 
 This code allows you to use a ESP8266/ESP32 with a fitting led strip as extension for [hyperion](https://github.com/hyperion-project) (ambilight clone).
